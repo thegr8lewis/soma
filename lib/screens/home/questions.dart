@@ -278,10 +278,12 @@ class _QuestionsPageState extends State<QuestionsPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 150, // Set the desired width
-                height: 150, // Set the desired height
-                child: Lottie.network('https://lottie.host/c4d75a88-82d9-460a-910a-7757db3c3d3d/lJiU0DGYeW.json'),
+              SizedBox(
+                child: Lottie.asset(
+                  'assets/welldone.json',
+                  repeat: true,
+                  width: 100,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -343,3 +345,4 @@ class _QuestionsPageState extends State<QuestionsPage> {
     );
   }
 }
+

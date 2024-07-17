@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:system_auth/config.dart';
@@ -346,24 +347,12 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            CircularPercentIndicator(
-              radius: 45.0,
-              lineWidth: 12.0,
-              animation: true,
-              percent: quizProgress,
-              center: Text(
-                '${(quizProgress * 100).toInt()}%',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+            SizedBox(
+              child: Lottie.asset(
+                'assets/books.json',
+                repeat: true,
+                width: 110,
               ),
-              progressColor: Colors.lime,
-              backgroundColor: Colors.white,
-              circularStrokeCap: CircularStrokeCap.round,
             ),
           ],
         ),
