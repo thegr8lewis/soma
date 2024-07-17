@@ -144,7 +144,7 @@ class _SignInState extends State<SignIn> {
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        color: const Color(0xFF00072D),
+        color: const Color(0xFFFDF7F2),
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -163,7 +163,7 @@ class _SignInState extends State<SignIn> {
                         'assets/soma3.png',
                         height: screenHeight * 0.15,
                         width: screenWidth * 0.3,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.03),
@@ -173,7 +173,7 @@ class _SignInState extends State<SignIn> {
                         textStyle: TextStyle(
                           fontSize: screenHeight * 0.025,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                       textAlign: TextAlign.center,
@@ -342,8 +342,7 @@ class _SignInState extends State<SignIn> {
                               style: GoogleFonts.poppins(
                                 textStyle: TextStyle(
                                   fontSize: screenHeight * 0.02,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -357,7 +356,7 @@ class _SignInState extends State<SignIn> {
                               child: Text(
                                 'Sign In',
                                 style: TextStyle(
-                                  color: Colors.green,
+                                  color: Colors.blueAccent,
                                   fontSize: screenHeight * 0.02,
                                 ),
                               ),
@@ -388,6 +387,4 @@ class _SignInState extends State<SignIn> {
       ),
     );
   }
-
-
 }

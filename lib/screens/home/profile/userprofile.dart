@@ -83,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }),
     );
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
       setState(() {
         _name = newName;
         _grade = newGrade;
@@ -168,8 +168,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   title: const Text(
                     'Update Your Details',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueGrey,
+                      // fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                   content: Column(
@@ -306,13 +306,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      // backgroundColor: Colors.grey,
+      backgroundColor: const Color(0xFFFDF7F2),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF00072D),
+        backgroundColor: Colors.grey,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          color: Colors.white, // Change icon color to white
+          color: Colors.black, // Change icon color to white
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -320,237 +323,271 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           },
         ),
-        title:  Text(
+        title: const Text(
           'Profile',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          style: TextStyle(
+            color: Colors.black, // Change text color to white
           ),
         ),
         centerTitle: true,
-        elevation: 4.0,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Stack(
-              children: [
-                Container(
-                  height: 300,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF00072D),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(50),
-                      bottomRight: Radius.circular(50),
-                    ),
-                  ),
-                ),
-                Column(
-                  children: [
-                    const SizedBox(height: 60),
-                    Center(
-                      child: CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.grey.shade200,
-                        child: _profileImageUrl != null
-                            ? Text(
-                          _name?.substring(0, 2).toUpperCase() ?? '',
-                          style: const TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                            : null,
+      body: Padding(
+        padding: const EdgeInsets.all(0.0), // Adjust padding as needed
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    height: screenHeight * 0.3,
+                    decoration: const BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(50),
+                        bottomRight: Radius.circular(50),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: Text(
-                        _name ?? 'Loading...',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                  ),
+                  Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      Center(
+                        child: CircleAvatar(
+                          radius: screenWidth < 600 ? 70 : 90,
+                          backgroundColor: Colors.grey.shade200,
+                          child: _profileImageUrl != null
+                              ? Text(
+                            _name?.substring(0, 2).toUpperCase() ??
+                                '',
+                            style: TextStyle(
+                              fontSize: screenWidth < 600 ? 30 : 40,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                              : const Icon(
+                            Icons.face,
+                            size: 80,
+                            // size: screenWidth < 600 ? 60 : 80,
+                            color: Colors.black54,
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      Center(
+                        child: Text(
+                          _name ?? 'Loading...',
+                          style: TextStyle(
+                            fontSize: screenWidth < 600 ? 20 : 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              _grade != null ? 'Grade: $_grade' : 'Loading...',
+                              style: TextStyle(
+                                fontSize: screenWidth < 600 ? 15 : 20,
+                                color: Colors.black,
+                              ),
+                            ),
+                            if (_updateErrorMessage.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  _updateErrorMessage,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: screenWidth < 600 ? 8 : 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: screenWidth < 600 ? 10.0 : 20.0),
+                    child: Text(
+                      'Update Profile',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: screenWidth < 600 ? 20 : 25,
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            _grade != null ? 'Grade: $_grade' : 'Loading...',
-                            style: GoogleFonts.poppins(
-                              textStyle: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                  ),
+                  Tooltip(
+                    message: 'Edit profile', // Tooltip message to display
+                    child: IconButton(
+                      icon: const SizedBox(
+                        width: 27, // Specify the desired width
+                        height: 27, // Specify the desired height
+                        child: Icon(Icons.edit_note_rounded),
+                      ),
+                      onPressed: _showUpdateDialog,
+                    ),
+                  ),
+
+                ],
+              ),
+              const SizedBox(height: 22),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth < 600 ? 10.0 : 20.0),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.person),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _name ?? 'Name',
+                              style: TextStyle(
+                                fontSize: screenWidth < 600 ? 16 : 19,
                               ),
                             ),
                           ),
-                          if (_updateErrorMessage.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                _updateErrorMessage,
-                                style: const TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.school),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _grade != null ? 'Grade: $_grade' : 'Grade',
+                              style: TextStyle(
+                                fontSize: screenWidth < 600 ? 16 : 19,
+                                color: Colors.black,
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.help),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Help and information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                // fontSize: screenWidth < 600 ? 16 : 19,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.message),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Contact Us',
+                              style: TextStyle(
+                                fontSize: 16,
+                                // fontSize: screenWidth < 600 ? 12 : 15,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.all(20.0), // Adjust padding as needed
-              child: Column(
+              ),
+              SizedBox(height: screenWidth < 600 ? 170 :330), // Adjust spacing for larger screens
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.person),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _name ?? 'Name',
-                            style: GoogleFonts.poppins(
-                              textStyle: const TextStyle(
-                                fontSize: 20,
-
+                  TextButton(
+                    onPressed: () {
+                      _logOut();
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.logout, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Log Out',
+                              style: TextStyle(
+                                fontSize: screenWidth < 600 ? 16 : 19,
                                 color: Colors.black,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Tooltip(
-                        message: 'Edit profile', // Tooltip message to display
-                        child: IconButton(
-                          icon: const Icon(Icons.edit_note_rounded),
-                          onPressed: _showUpdateDialog,
-                        ),
-                      )
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.school),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _grade != null ? 'Grade: $_grade' : 'Grade',
-                            style: GoogleFonts.poppins(
-                              textStyle: const TextStyle(
-                                fontSize: 20,
-
+                  TextButton(
+                    onPressed: () {
+                      _showDeleteConfirmationDialog();
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.delete_forever, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Delete Profile',
+                              style: TextStyle(
+                                fontSize: screenWidth < 600 ? 16 : 19,
                                 color: Colors.black,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Tooltip(
-                        message: 'Edit Profile', // Tooltip message to display
-                        child: IconButton(
-                          icon: const Icon(Icons.edit_note_rounded),
-                          onPressed: _showUpdateDialog,
-                        ),
-                      )
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 170),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: _logOut,
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.green[900],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.logout, // Icon for logout
-                        color: Colors.white, // Color of the icon
-                      ),
-                      SizedBox(width: 8), // SizedBox for spacing between icon and text
-                      Text(
-                        'Log Out',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16, // Adjust font size as needed
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: _showDeleteConfirmationDialog,
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.red[900],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.delete, // Icon for delete
-                        color: Colors.white, // Color of the icon
-                      ),
-                      SizedBox(width: 8), // SizedBox for spacing between icon and text
-                      Text(
-                        'Delete Profile',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16, // Adjust font size as needed
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
+
 }

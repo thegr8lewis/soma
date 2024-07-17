@@ -42,6 +42,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
   void _checkFields() {
     _isButtonEnabled.value =
         _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
+    _rememberMe;
   }
 
   @override
@@ -147,32 +148,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
     }
   }
 
-  Future<void> _fetchUserData() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$BASE_URL/profile'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': _sessionCookie ?? (await _storage.read(key: 'session_cookie'))!,
-        },
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          // Handle the data received from the profile endpoint
-        });
-      } else {
-        setState(() {
-          // Handle the error response
-        });
-      }
-    } catch (e) {
-      setState(() {
-        // Handle the exception
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -182,7 +157,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        color: const Color(0xFF00072D),
+        // color: const Color(0xFF00072D),
+        color: const Color(0xFFFDF7F2),
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -201,7 +177,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                         'assets/soma3.png',
                         height: screenHeight * 0.15,
                         width: screenWidth * 0.3,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.03),
@@ -211,7 +187,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                         textStyle: TextStyle(
                           fontSize: screenHeight * 0.025,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                       textAlign: TextAlign.center,
@@ -288,7 +264,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                                     });
                                   }
                                       : null,
-                                  activeColor: Colors.teal,
+                                  activeColor: Colors.green,
                                 );
                               },
                             ),
@@ -296,9 +272,9 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                               'Remember me',
                               style: GoogleFonts.poppins(
                                 textStyle: TextStyle(
-                                  fontSize: screenHeight * 0.02,
+                                  fontSize: screenHeight * 0.014,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -316,8 +292,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                             style: GoogleFonts.poppins(
                               textStyle: TextStyle(
                                 fontSize: screenHeight * 0.015,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
+                                // fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent,
                               ),
                             ),
                           ),
@@ -325,6 +301,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                       ],
                     ),
                     SizedBox(height: screenHeight * 0.03),
+
                     ValueListenableBuilder<bool>(
                       valueListenable: _isButtonEnabled,
                       builder: (context, value, child) {
@@ -346,7 +323,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               padding: EdgeInsets.symmetric(
-                                vertical: screenHeight * 0.015,
+                                vertical: screenHeight * 0.010,
                                 horizontal: screenWidth * 0.3,
                               ),
                             ),
@@ -374,8 +351,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                               "Don't have an account?",
                               style: GoogleFonts.poppins(
                                 textStyle: TextStyle(
-                                  fontSize: screenHeight * 0.015,
-                                  color: Colors.white,
+                                  fontSize: screenHeight * 0.019,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
@@ -391,7 +368,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
                                     fontSize: screenHeight * 0.015,
-                                    color: Colors.green,
+                                    color: Colors.blueAccent,
                                   ),
                                 ),
                               ),

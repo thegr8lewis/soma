@@ -7,6 +7,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:system_auth/config.dart';
 import 'package:system_auth/screens/home/profile/userprofile.dart';
 import 'package:system_auth/screens/home/topics.dart';
+import '../screens/home/dailyquiz.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -200,7 +201,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
               _buildStatSection(),
               const SizedBox(height: 20),
-              _buildCourseSection(),
+              _buildCourseSection(context), // Pass context here
               const SizedBox(height: 20),
               _buildSubjectsSection(context),
             ],
@@ -279,12 +280,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseSection() {
+  Widget _buildCourseSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Practice More'),
-        _buildDailyQuizCard(),
+        _buildDailyQuizCard(context), // Pass context here
         const SizedBox(height: 20),
         _buildSectionTitle('Subjects'),
       ],
@@ -302,62 +303,70 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDailyQuizCard() {
+  Widget _buildDailyQuizCard(BuildContext context) {
     double quizProgress = 0.1; // Replace with actual progress value
 
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Daily Quiz',
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DailyQuizScreen()), // Navigate to DailyQuizPage
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Daily Quiz',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Text(
+                  'Predictable Questions',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            CircularPercentIndicator(
+              radius: 45.0,
+              lineWidth: 12.0,
+              animation: true,
+              percent: quizProgress,
+              center: Text(
+                '${(quizProgress * 100).toInt()}%',
                 style: GoogleFonts.poppins(
                   textStyle: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
               ),
-              Text(
-                'Predictable Questions',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          CircularPercentIndicator(
-            radius: 45.0,
-            lineWidth: 12.0,
-            animation: true,
-            percent: quizProgress,
-            center: Text(
-              '${(quizProgress * 100).toInt()}%',
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              progressColor: Colors.lime,
+              backgroundColor: Colors.white,
+              circularStrokeCap: CircularStrokeCap.round,
             ),
-            progressColor: Colors.lime,
-            backgroundColor: Colors.white,
-            circularStrokeCap: CircularStrokeCap.round,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -393,7 +402,7 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => TopicsPage(
                   subjectId: subject.id,
-                  subjectName: subject.name ?? 'No name',
+                  subjectName: subject.name ?? 'No name', subject_name: '',
                 ),
               ),
             );
@@ -426,7 +435,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
 
 class Subject {
   final String? name;

@@ -115,7 +115,7 @@ class _GradePageState extends State<GradePage> {
       body: Stack(
         children: [
           Container(
-            color: const Color(0xFF00072D),
+            color: const Color(0xFFFDF7F2),
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -123,13 +123,13 @@ class _GradePageState extends State<GradePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.school, color: Colors.white,size: 100.0,),
+                      const Icon(Icons.school, color: Colors.blueGrey,size: 100.0,),
                       const SizedBox(width: 8),
                       const Text(
                         'Select your grade',
                         style: TextStyle(
                           fontSize: 20,
-                          color: Colors.white, // White color for the text
+                          color: Colors.black, // White color for the text
                         ),
                       ),
                       const SizedBox(height: 30), // Spacing between text and grade options
@@ -192,7 +192,7 @@ class GradeOption extends StatelessWidget {
             'Grade $grade',
             style: const TextStyle(
               fontSize: 16,
-              color: Colors.white, // White color for the text
+              color: Colors.black, // White color for the text
             ),
           ),
         ],

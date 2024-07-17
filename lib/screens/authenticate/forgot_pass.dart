@@ -100,11 +100,14 @@ class _ForgotPassState extends State<ForgotPass> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:const Color(0xFF00072D),
+        backgroundColor:  const Color(0xFFFDF7F2),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -113,106 +116,127 @@ class _ForgotPassState extends State<ForgotPass> {
           },
         ),
       ),
-     body: Container(
-       color: const Color(0xFF00072D),
-       child: Stack(
-         children: [
-           Center(
-             child: Padding(
-               padding: const EdgeInsets.all(16.0),
-               child: Container(
-                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
-                 decoration: BoxDecoration(
-                   color: const Color(0xFF00072D),
-                   borderRadius: BorderRadius.circular(20.0),
-                   boxShadow: const [
-                     BoxShadow(
-                       color: Colors.black26,
-                       blurRadius: 10.0,
-                       offset: Offset(0, 10),
-                     ),
-                   ],
-                 ),
-                 child: Column(
-                   mainAxisSize: MainAxisSize.min,
-                   crossAxisAlignment: CrossAxisAlignment.center,
-                   children: [
-                     const Text(
-                       'Forgot Password!',
-                       style: TextStyle(
-                         fontSize: 24,
-                         fontWeight: FontWeight.bold,
-                         color: Colors.white,
-                       ),
-                     ),
-                     const SizedBox(height: 16),
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.center,
-                       children: [
-                         _buildOptionButton('Email ID', isEmailSelected),
-                       ],
-                     ),
-                     const SizedBox(height: 16),
-                     const Align(
-                       alignment: Alignment.centerLeft,
-                       child: Text(
-                         'Enter the Registered Mail ID to get OTP',
-                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white,),
-                       ),
-                     ),
-                     const SizedBox(height: 8),
-                     TextField(
-                       controller: _emailController,
-                       style: TextStyle(color: Colors.white),
-                       keyboardType: TextInputType.emailAddress,
-                       decoration: InputDecoration(
-                         prefixIcon: Icon(Icons.email, color: Colors.white),
-                         hintText: 'Email',
-                         hintStyle: const TextStyle(color: Colors.white),
-                         border: OutlineInputBorder(
-                           borderRadius: BorderRadius.circular(10.0),
-                         ),
-                         focusedBorder: OutlineInputBorder(
-                           borderSide: const BorderSide(color: Colors.green),
-                           borderRadius: BorderRadius.circular(10),
-                         ),
-                       ),
-                     ),
-                     const SizedBox(height: 24),
-                     ElevatedButton(
-                       onPressed: isButtonEnabled ? _sendOTP : null,
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: Colors.green[500],
-                         padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 16),
-                         shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.circular(10.0),
-                         ),
-                       ),
-                       child: const Text('Send OTP',
-                         style: TextStyle(
-                           fontSize: 16,
-                           color: Colors.white, // Grey color for the text
-                         ),
-                       ),
-                     ),
-                   ],
-                 ),
-               ),
-             ),
-           ),
-           if (_isLoading)
-             Scaffold(
-               backgroundColor: Colors.black.withOpacity(0.5),
-               body: Center(
-                 child: LoadingAnimationWidget.staggeredDotsWave(
-                   color: const Color(0xFF00796B),
-                   size: 100,
-                 ),
-               ),
-             ),
-         ],
-       ),
-     ),
+      body: Container(
+        width: screenWidth,
+        height: screenHeight,
+        color: const Color(0xFFFDF7F2),
+        child: Stack(
+          children: [
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: Container(
+                  width: screenWidth * 0.9,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.06,
+                    vertical: screenHeight * 0.045,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF00072D),
+                    borderRadius: BorderRadius.circular(20.0),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10.0,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Forgot Password!',
+                        style: TextStyle(
+                          fontSize: screenHeight * 0.03,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildOptionButton('Email ID', isEmailSelected),
+                        ],
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Enter the Registered Mail ID to get OTP',
+                          style: TextStyle(
+                            fontSize: screenHeight * 0.018,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.01),
+                      Container(
+                        width: screenWidth * 0.9,
+                        height: screenHeight * 0.08,
+                        child: TextField(
+                          controller: _emailController,
+                          style: TextStyle(color: Colors.white),
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(Icons.email, color: Colors.white),
+                            hintText: 'Email',
+                            hintStyle: const TextStyle(color: Colors.white),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: Colors.green),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.03),
+                      ElevatedButton(
+                        onPressed: isButtonEnabled ? _sendOTP : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[500],
+                          textStyle: TextStyle(fontSize: screenHeight * 0.02),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.015,
+                            horizontal: screenWidth * 0.2,
+                          ),
+                        ),
+                        child: Text(
+                          'Send OTP',
+                          style: TextStyle(
+                            fontSize: screenHeight * 0.02,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (_isLoading)
+              Container(
+                width: screenWidth,
+                height: screenHeight,
+                color: Colors.black.withOpacity(0.5),
+                child: Center(
+                  child: LoadingAnimationWidget.staggeredDotsWave(
+                    color: const Color(0xFF00796B),
+                    size: screenHeight * 0.1,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 

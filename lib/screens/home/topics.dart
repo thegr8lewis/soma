@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:system_auth/screens/home/questions.dart';
 import 'dart:convert';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../config.dart';
-import '../../trialpages/trial3.dart';
-import 'questions.dart';
+import '../home/questions.dart'; // Import the correct path to QuestionsPage
 
 class TopicsPage extends StatefulWidget {
   final int subjectId;
   final String subjectName;
+  final String subject_name; // Corrected variable name
 
-  TopicsPage({required this.subjectId, required this.subjectName});
+  TopicsPage({required this.subjectId, required this.subjectName, required this.subject_name});
 
   @override
   _TopicsPageState createState() => _TopicsPageState();
 }
 
 class _TopicsPageState extends State<TopicsPage> {
-  List topics = [];
-  int? selectedTopicIndex; // Track the index of the selected topic
+  List<Map<String, dynamic>> topics = [];
 
   @override
   void initState() {
@@ -27,14 +26,48 @@ class _TopicsPageState extends State<TopicsPage> {
     fetchTopics();
   }
 
-  fetchTopics() async {
-    final response = await http.get(Uri.parse('$BASE_URL/${widget.subjectId}/topics'));
-    if (response.statusCode == 200) {
-      setState(() {
-        topics = json.decode(response.body);
-      });
-    } else {
-      throw Exception('Failed to load topics');
+  Future<void> fetchTopics() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$BASE_URL/${widget.subjectId}/topics'), // Adjust the API endpoint according to your backend
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> parsedTopics = json.decode(response.body);
+        for (var topic in parsedTopics) {
+          final totalQuestions = await fetchTotalQuestions(topic['id']);
+          topic['total_questions'] = totalQuestions;
+        }
+        setState(() {
+          topics = parsedTopics.cast<Map<String, dynamic>>();
+        });
+      } else {
+        throw Exception('Failed to load topics');
+      }
+    } catch (e) {
+      print('Error fetching topics: $e');
+      // Handle error as needed
+    }
+  }
+
+  Future<int> fetchTotalQuestions(int topicId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$BASE_URL/questions/${widget.subjectName}/$topicId'),
+      );
+
+      if (response.statusCode == 200) {
+        final questions = json.decode(response.body) as List<dynamic>;
+        return questions.length;
+      } else {
+        throw Exception('Failed to load questions');
+      }
+    } catch (e) {
+      print('Error fetching total questions: $e');
+      return 0;
     }
   }
 
@@ -42,50 +75,49 @@ class _TopicsPageState extends State<TopicsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.subjectName} Topics'),
+        title: Text(widget.subjectName),
       ),
-      body: ListView.builder(
+      body: topics.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
         itemCount: topics.length,
         itemBuilder: (context, index) {
-          var topic = topics[index];
-          var topicName = topic['topic_name'] ?? 'Unnamed Topic';
-          bool isSelected = index == selectedTopicIndex; // Check if this topic is selected
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedTopicIndex = index; // Update the selected topic index
-              });
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                  Quest()
-                  //     QuestionsPage(
-                  //   topicId: topic['id'],
-                  //   topicName: topicName,
-                  // ),
-                ),
-              );
-            },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              elevation: 4,
-              margin: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              color: isSelected ? Colors.grey[200] : Colors.white, // Change color based on selection
-              child: ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                title: Text(
-                  topicName,
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown,
-                    ),
+          final topic = topics[index];
+          return Center( // Center the container within the ListView
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9, // Control the width here
+              margin: const EdgeInsets.symmetric(vertical: 8), // Adjust vertical margin
+              padding: const EdgeInsets.all(16), // Adjust padding
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
                   ),
+                ],
+              ),
+              child: ListTile(
+                title: Text(topic['topic_name'] ?? 'No name'), // Use null-aware operator
+                trailing: Text(
+                  '${topic['total_questions'] ?? 0} questions', // Display total questions
+                  // style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuestionsPage(
+                        topicId: topic['id'] ?? 0, // Example default value
+                        topicName: topic['topic_name'] ?? 'Unknown', // Example default value
+                        subjectName: widget.subjectName,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           );
