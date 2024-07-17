@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:system_auth/screens/home/questions.dart';
+import 'package:skeleton_text/skeleton_text.dart';
 import 'dart:convert';
 
 import '../../config.dart';
@@ -19,6 +20,7 @@ class TopicsPage extends StatefulWidget {
 
 class _TopicsPageState extends State<TopicsPage> {
   List<Map<String, dynamic>> topics = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _TopicsPageState extends State<TopicsPage> {
         }
         setState(() {
           topics = parsedTopics.cast<Map<String, dynamic>>();
+          isLoading = false;
         });
       } else {
         throw Exception('Failed to load topics');
@@ -71,58 +74,105 @@ class _TopicsPageState extends State<TopicsPage> {
     }
   }
 
+  Widget _buildSkeletonLoader() {
+    return ListView.builder(
+      itemCount: 5, // Number of skeleton cards to display
+      itemBuilder: (context, index) {
+        return Center(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonAnimation(
+                  child: Container(
+                    height: 20,
+                    width: MediaQuery.of(context).size.width * 0.6,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SkeletonAnimation(
+                  child: Container(
+                    height: 20,
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.subjectName),
       ),
-      body: topics.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+      body: isLoading
+          ? _buildSkeletonLoader()
           : ListView.builder(
-        itemCount: topics.length,
-        itemBuilder: (context, index) {
-          final topic = topics[index];
-          return Center( // Center the container within the ListView
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.9, // Control the width here
-              margin: const EdgeInsets.symmetric(vertical: 8), // Adjust vertical margin
-              padding: const EdgeInsets.all(16), // Adjust padding
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: ListTile(
-                title: Text(topic['topic_name'] ?? 'No name'), // Use null-aware operator
-                trailing: Text(
-                  '${topic['total_questions'] ?? 0} questions', // Display total questions
-                  // style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QuestionsPage(
-                        topicId: topic['id'] ?? 0, // Example default value
-                        topicName: topic['topic_name'] ?? 'Unknown', // Example default value
-                        subjectName: widget.subjectName,
-                      ),
+              itemCount: topics.length,
+              itemBuilder: (context, index) {
+                final topic = topics[index];
+                return Center( // Center the container within the ListView
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.9, // Control the width here
+                    margin: const EdgeInsets.symmetric(vertical: 8), // Adjust vertical margin
+                    padding: const EdgeInsets.all(16), // Adjust padding
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
+                    child: ListTile(
+                      title: Text(topic['topic_name'] ?? 'No name'), // Use null-aware operator
+                      trailing: Text(
+                        '${topic['total_questions'] ?? 0} questions', // Display total questions
+                        // style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuestionsPage(
+                              topicId: topic['id'] ?? 0, // Example default value
+                              topicName: topic['topic_name'] ?? 'Unknown', // Example default value
+                              subjectName: widget.subjectName,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

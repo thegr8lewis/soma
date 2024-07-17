@@ -21,6 +21,7 @@ class _PamelaState extends State<Homepage> {
   late Future<List<Subject>> _subjectsFuture;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   String? _firstName;
+  String? _initials;
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _PamelaState extends State<Homepage> {
         final username = data['username'] as String;
         setState(() {
           _firstName = username.split(' ')[0]; // Get the first name from the username
+          _initials = _firstName!.substring(0, 2).toUpperCase(); // Get the first two letters of the first name
         });
       } else {
         print('Failed to load user data. Status code: ${response.statusCode}');
@@ -97,7 +99,7 @@ class _PamelaState extends State<Homepage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          HomeScreen(subjectsFuture: _subjectsFuture, firstName: _firstName),
+          HomeScreen(subjectsFuture: _subjectsFuture, firstName: _firstName, initials: _initials),
           const ProfilePage(),
           const SettingsScreen(),
           const NotificationsScreen(),
@@ -135,8 +137,9 @@ class _PamelaState extends State<Homepage> {
 class HomeScreen extends StatelessWidget {
   final Future<List<Subject>> subjectsFuture;
   final String? firstName;
+  final String? initials;
 
-  const HomeScreen({Key? key, required this.subjectsFuture, this.firstName}) : super(key: key);
+  const HomeScreen({Key? key, required this.subjectsFuture, this.firstName, this.initials}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +158,7 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '👋 Hi ${firstName ?? 'User'},',
+                        '👋 Hi ${firstName ?? 'There'},',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
                             fontSize: 24,
@@ -184,16 +187,23 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: const BoxDecoration(
-                        color: Colors.lime,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 42.0,
-                      ),
+                    child: CircleAvatar(
+                      radius: 21,
+                      backgroundColor: Colors.lime,
+                      child: initials != null
+                          ? Text(
+                              initials!,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 42.0,
+                              color: Colors.black,
+                            ),
                     ),
                   ),
                 ],

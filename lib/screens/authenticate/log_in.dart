@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) =>  const GradePage()),
+        MaterialPageRoute(builder: (context) =>  const Homepage()),
       );
     } else {
       showDialog(
