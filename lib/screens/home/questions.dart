@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'dart:convert';
-// import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../config.dart';
 import 'congratulations.dart';
@@ -30,7 +30,9 @@ class _QuestionsPageState extends State<QuestionsPage> {
   String? selectedChoice;
   int score = 0;
   int questionsAttempted = 0;
-  // FlutterTts flutterTts = FlutterTts();
+  AudioPlayer audioPlayer = AudioPlayer();
+
+  final String apiKey = 'e4e855cee27d4bba9b9f70391fc7ef33'; // Replace with your Voice RSS API key
 
   @override
   void initState() {
@@ -46,6 +48,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
           questions = json.decode(response.body) as List<dynamic>;
           isLoading = false;
         });
+        speak(questions[currentQuestionIndex]['question']); // Speak the first question
       } else {
         setState(() {
           errorMessage = 'Failed to load questions';
@@ -57,6 +60,29 @@ class _QuestionsPageState extends State<QuestionsPage> {
         errorMessage = e.toString();
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> speak(String text) async {
+    final url = Uri.parse('https://api.voicerss.org/');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'key': apiKey,
+        'hl': 'en-us',
+        'src': text,
+        'c': 'MP3',
+        'f': '16khz_16bit_mono',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final audioContent = response.bodyBytes;
+      // Use setSourceBytes method to play audio from byte array
+      await audioPlayer.play(BytesSource(audioContent));
+    } else {
+      print('Failed to synthesize speech: ${response.body}');
     }
   }
 
@@ -128,6 +154,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
                       currentQuestionIndex++;
                       selectedChoice = null;
                     });
+                    speak(questions[currentQuestionIndex]['question']); // Speak the next question
                   } else {
                     Navigator.pushReplacement(
                       context,
@@ -177,15 +204,11 @@ class _QuestionsPageState extends State<QuestionsPage> {
             ),
           ),
         );
+      } else {
+        speak(questions[currentQuestionIndex]['question']); // Speak the next question
       }
     });
   }
-
-  // Future<void> speak(String text) async {
-  //   await flutterTts.setLanguage("en-US");
-  //   await flutterTts.setPitch(1.0);
-  //   await flutterTts.speak(text);
-  // }
 
   @override
   Widget build(BuildContext context) {

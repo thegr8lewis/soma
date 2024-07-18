@@ -76,7 +76,7 @@ class _TopicsPageState extends State<TopicsPage> {
 
   Widget _buildSkeletonLoader() {
     return ListView.builder(
-      itemCount: 5, // Number of skeleton cards to display
+      itemCount: 8, // Number of skeleton cards to display
       itemBuilder: (context, index) {
         return Center(
           child: Container(

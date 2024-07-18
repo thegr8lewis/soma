@@ -25,6 +25,7 @@ dependencies:
   percent_indicator: ^4.2.3
   confetti: ^0.7.0
   skeleton_text: ^3.0.1
+  audioplayers: ^5.2.1
 #  flutter_tts: ^4.0.2
 
 dev_dependencies:
