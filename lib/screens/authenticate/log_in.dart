@@ -4,13 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:system_auth/screens/authenticate/forgot_pass.dart';
-import 'package:system_auth/screens/authenticate/grade.dart';
 import 'package:system_auth/screens/authenticate/sign_in.dart';
-import 'package:system_auth/screens/home/home.dart';
+
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:system_auth/trialpages/apply.dart';
-import 'package:system_auth/trialpages/trial2.dart';
-
 import '../../config.dart';
 
 class LogIn extends StatefulWidget {
@@ -125,7 +122,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) =>  const Homepage()),
+        MaterialPageRoute(builder: (context) => const Homepage()),
       );
     } else {
       showDialog(
@@ -157,7 +154,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        // color: const Color(0xFF00072D),
         color: const Color(0xFFFDF7F2),
         child: Stack(
           children: [
@@ -292,7 +288,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                             style: GoogleFonts.poppins(
                               textStyle: TextStyle(
                                 fontSize: screenHeight * 0.015,
-                                // fontWeight: FontWeight.bold,
                                 color: Colors.blueAccent,
                               ),
                             ),
@@ -399,7 +394,4 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       ),
     );
   }
-
-
-
 }

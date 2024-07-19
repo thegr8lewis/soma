@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 import 'dart:convert';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:system_auth/config.dart';
@@ -100,8 +101,6 @@ class _PamelaState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: const Color(0xFFFDF7F2),
       body: IndexedStack(
@@ -113,11 +112,9 @@ class _PamelaState extends State<Homepage> {
               initials: _initials),
           const ProfilePage(),
           SettingsPage(),
-          // const NotificationsScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        // backgroundColor: const Color(0xFF6200EE),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -131,13 +128,9 @@ class _PamelaState extends State<Homepage> {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.notifications),
-          //   label: 'Notifications',
-          // ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 23, 21, 178),
+        selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.black,
         onTap: _onItemTapped,
       ),
@@ -221,11 +214,11 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 5),
               _buildStatSection(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 5),
               _buildCourseSection(context), // Pass context here
-              const SizedBox(height: 20),
+              const SizedBox(height: 5),
               _buildSubjectsSection(context),
             ],
           ),
@@ -250,7 +243,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 1.0),
       ],
     );
   }
@@ -311,7 +304,7 @@ class HomeScreen extends StatelessWidget {
       children: [
         _buildSectionTitle('Practice More'),
         _buildDailyQuizCard(context), // Pass context here
-        const SizedBox(height: 20),
+        const SizedBox(height: 5),
         _buildSectionTitle('Subjects'),
       ],
     );
@@ -335,13 +328,11 @@ class HomeScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  DailyQuizScreen()), // Navigate to DailyQuizPage
+          MaterialPageRoute(builder: (context) => DailyQuizScreen()), // Navigate to DailyQuizPage
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
           color: Colors.green,
           borderRadius: BorderRadius.circular(12.0),
@@ -373,24 +364,12 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            CircularPercentIndicator(
-              radius: 45.0,
-              lineWidth: 12.0,
-              animation: true,
-              percent: quizProgress,
-              center: Text(
-                '${(quizProgress * 100).toInt()}%',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+            SizedBox(
+              child: Lottie.asset(
+                'assets/books.json',
+                repeat: true,
+                width: 110,
               ),
-              progressColor: Colors.lime,
-              backgroundColor: Colors.white,
-              circularStrokeCap: CircularStrokeCap.round,
             ),
           ],
         ),
@@ -403,10 +382,9 @@ class HomeScreen extends StatelessWidget {
       future: subjectsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: Lottie.asset('assets/loader.json', width: 50)); // Use a Lottie animation for loading
         } else if (snapshot.hasError) {
-          return Center(
-              child: Text('Error fetching subjects: ${snapshot.error}'));
+          return Center(child: Text('Error fetching subjects: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No subjects available.'));
         } else {
@@ -423,6 +401,9 @@ class HomeScreen extends StatelessWidget {
       itemCount: subjects.length,
       itemBuilder: (context, index) {
         final subject = subjects[index];
+        // Example of using Lorem Picsum to get random images
+        final imageUrl = 'https://picsum.photos/seed/$index/250/150';
+        
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -436,24 +417,25 @@ class HomeScreen extends StatelessWidget {
               ),
             );
           },
-          child: Card(
-            child: ListTile(
-              title: Text(
-                subject.name ?? 'No name',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.brown,
-                  ),
-                ),
+          child: Container(
+            height: 100, // Set the height you want
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
               ),
-              subtitle: Text(
-                subject.description ?? '0 questions done',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
+            ),
+            child: Card(
+              color: Colors.transparent, // Set Card color to transparent
+              child: ListTile(
+                title: Text(
+                  subject.name ?? 'No name',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Change text color to contrast with background
+                    ),
                   ),
                 ),
               ),
@@ -511,7 +493,7 @@ class SettingsPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ProfilePage(),
+                  builder: (context) => ProfilePage(),
                 ),
               );
               // Navigate to Account settings
@@ -543,23 +525,53 @@ class SettingsPage extends StatelessWidget {
             context,
             icon: Icons.logout,
             title: 'Logout',
-            
             onTap: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Confirm Logout'),
-                    content: Text('Are you sure you want to log out?'),
+                    title: Text(
+                      'Confirm Logout',
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    content: Text(
+                      'Are you sure you want to log out?',
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
                     actions: <Widget>[
                       TextButton(
-                        child: Text('No'),
+                        child: Text(
+                          'No',
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
                       ),
                       TextButton(
-                        child: Text('Yes'),
+                        child: Text(
+                          'Yes',
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                           Navigator.push(
@@ -577,14 +589,6 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
-          // _buildListTile(
-          //   context,
-          //   icon: Icons.delete,
-          //   title: 'Delete account',
-          //   onTap: () {
-          //     // Navigate to Delete account settings
-          //   },
-          // ),
           SizedBox(height: 16),
           _buildSectionTitle('FEEDBACK'),
           _buildListTile(
@@ -605,20 +609,6 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: const <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.home),
-      //       label: 'Home',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.settings),
-      //       label: 'Settings',
-      //     ),
-      //   ],
-      //   currentIndex: 1, // Set the selected index to Settings
-      //   selectedItemColor: Colors.blue,
-      // ),
     );
   }
 
@@ -627,22 +617,29 @@ class SettingsPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey[600],
+        style: GoogleFonts.poppins(
+          textStyle: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[600],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildListTile(BuildContext context,
-      {required IconData icon,
-      required String title,
-      required VoidCallback onTap}) {
+      {required IconData icon, required String title, required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.blue),
-      title: Text(title),
+      title: Text(
+        title,
+        style: GoogleFonts.poppins(
+          textStyle: TextStyle(
+            fontSize: 16,
+          ),
+        ),
+      ),
       trailing: Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );

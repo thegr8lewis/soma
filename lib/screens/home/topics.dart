@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:system_auth/screens/home/questions.dart';
 import 'package:skeleton_text/skeleton_text.dart';
 import 'dart:convert';
@@ -125,7 +126,16 @@ class _TopicsPageState extends State<TopicsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.subjectName),
+        title: Text(
+          widget.subjectName,
+          style: GoogleFonts.poppins(
+            textStyle: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
       ),
       body: isLoading
           ? _buildSkeletonLoader()
@@ -151,10 +161,24 @@ class _TopicsPageState extends State<TopicsPage> {
                       ],
                     ),
                     child: ListTile(
-                      title: Text(topic['topic_name'] ?? 'No name'), // Use null-aware operator
+                      title: Text(
+                        topic['topic_name'] ?? 'No name', // Use null-aware operator
+                        style: GoogleFonts.poppins(
+                          textStyle: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
                       trailing: Text(
                         '${topic['total_questions'] ?? 0} questions', // Display total questions
-                        // style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(
+                          textStyle: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
                       onTap: () {
                         Navigator.push(

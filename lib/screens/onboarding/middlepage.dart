@@ -3,7 +3,8 @@ import 'package:lottie/lottie.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/authenticate/sign_in.dart';
 
-class Middlepage extends StatelessWidget {
+
+class MiddlePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +32,7 @@ class Middlepage extends StatelessWidget {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF3E81F3), // Blue color
+                        backgroundColor: Color(0xFF3E81F3),
                         padding: EdgeInsets.symmetric(horizontal: 64, vertical: 16),
                         textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         shape: RoundedRectangleBorder(
@@ -44,15 +45,14 @@ class Middlepage extends StatelessWidget {
                           context,
                           MaterialPageRoute(builder: (context) => const LogIn()),
                         );
-                        // Navigate to Login Screen
                       },
                       child: Text('Login'),
                     ),
                     SizedBox(height: 20),
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Color(0xFF3E81F3), // Blue color
-                        side: BorderSide(color: Color(0xFF3E81F3), width: 2), // Blue border color
+                        foregroundColor: Color(0xFF3E81F3),
+                        side: BorderSide(color: Color(0xFF3E81F3), width: 2),
                         padding: EdgeInsets.symmetric(horizontal: 64, vertical: 16),
                         textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         shape: RoundedRectangleBorder(
@@ -64,7 +64,6 @@ class Middlepage extends StatelessWidget {
                           context,
                           MaterialPageRoute(builder: (context) => const SignIn()),
                         );
-                        // Navigate to Signup Screen
                       },
                       child: Text('Sign Up'),
                     ),

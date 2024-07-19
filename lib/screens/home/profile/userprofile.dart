@@ -129,21 +129,33 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Profile'),
-          content: const Text('Are you sure you want to delete your profile? This action cannot be undone.'),
+          title: Text(
+            'Delete Profile',
+            style: GoogleFonts.poppins(),
+          ),
+          content: Text(
+            'Are you sure you want to delete your profile? This action cannot be undone.',
+            style: GoogleFonts.poppins(),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(),
+              ),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 _deleteProfile();
               },
-              child: const Text('Delete'),
+              child: Text(
+                'Delete',
+                style: GoogleFonts.poppins(),
+              ),
             ),
           ],
         );
@@ -165,11 +177,12 @@ class _ProfilePageState extends State<ProfilePage> {
             return Stack(
               children: [
                 AlertDialog(
-                  title: const Text(
+                  title: Text(
                     'Update Your Details',
-                    style: TextStyle(
-                      // fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    style: GoogleFonts.poppins(
+                      textStyle: TextStyle(
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   content: Column(
@@ -183,6 +196,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.person_outline_outlined),
                           hintText: 'Name',
+                          hintStyle: GoogleFonts.poppins(),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
@@ -196,6 +210,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         ),
+                        style: GoogleFonts.poppins(),
                       ),
                       const SizedBox(height: 20),
                       TextField(
@@ -207,6 +222,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.school),
                           hintText: 'GRADE',
+                          hintStyle: GoogleFonts.poppins(),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
@@ -220,13 +236,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         ),
+                        style: GoogleFonts.poppins(),
                       ),
                       if (_updateErrorMessage.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             _updateErrorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: GoogleFonts.poppins(color: Colors.red),
                           ),
                         ),
                     ],
@@ -242,11 +259,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        style: GoogleFonts.poppins(
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -268,11 +287,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'OK',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        style: GoogleFonts.poppins(
+                          textStyle: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -323,10 +344,12 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           },
         ),
-        title: const Text(
+        title: Text(
           'Profile',
-          style: TextStyle(
-            color: Colors.black, // Change text color to white
+          style: GoogleFonts.poppins(
+            textStyle: TextStyle(
+              color: Colors.black, // Change text color to white
+            ),
           ),
         ),
         centerTitle: true,
@@ -362,15 +385,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               ? Text(
                             _name?.substring(0, 2).toUpperCase() ??
                                 '',
-                            style: TextStyle(
-                              fontSize: screenWidth < 600 ? 30 : 40,
-                              fontWeight: FontWeight.bold,
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                fontSize: screenWidth < 600 ? 30 : 40,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           )
                               : const Icon(
                             Icons.face,
                             size: 80,
-                            // size: screenWidth < 600 ? 60 : 80,
                             color: Colors.black54,
                           ),
                         ),
@@ -379,10 +403,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       Center(
                         child: Text(
                           _name ?? 'Loading...',
-                          style: TextStyle(
-                            fontSize: screenWidth < 600 ? 20 : 30,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontSize: screenWidth < 600 ? 20 : 30,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       ),
@@ -392,9 +418,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           children: [
                             Text(
                               _grade != null ? 'Grade: $_grade' : 'Loading...',
-                              style: TextStyle(
-                                fontSize: screenWidth < 600 ? 15 : 20,
-                                color: Colors.black,
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenWidth < 600 ? 15 : 20,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                             if (_updateErrorMessage.isNotEmpty)
@@ -402,7 +430,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
                                   _updateErrorMessage,
-                                  style: const TextStyle(color: Colors.red),
+                                  style: GoogleFonts.poppins(color: Colors.red),
                                 ),
                               ),
                           ],
@@ -420,9 +448,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: EdgeInsets.symmetric(horizontal: screenWidth < 600 ? 10.0 : 20.0),
                     child: Text(
                       'Update Profile',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: screenWidth < 600 ? 20 : 25,
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          color: Colors.black,
+                          fontSize: screenWidth < 600 ? 20 : 25,
+                        ),
                       ),
                     ),
                   ),
@@ -437,7 +467,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       onPressed: _showUpdateDialog,
                     ),
                   ),
-
                 ],
               ),
               const SizedBox(height: 22),
@@ -455,8 +484,10 @@ class _ProfilePageState extends State<ProfilePage> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               _name ?? 'Name',
-                              style: TextStyle(
-                                fontSize: screenWidth < 600 ? 16 : 19,
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenWidth < 600 ? 16 : 19,
+                                ),
                               ),
                             ),
                           ),
@@ -474,9 +505,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               _grade != null ? 'Grade: $_grade' : 'Grade',
-                              style: TextStyle(
-                                fontSize: screenWidth < 600 ? 16 : 19,
-                                color: Colors.black,
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenWidth < 600 ? 16 : 19,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
@@ -496,7 +529,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               'Help and information',
                               style: TextStyle(
                                 fontSize: 16,
-                                // fontSize: screenWidth < 600 ? 16 : 19,
                                 color: Colors.black,
                               ),
                             ),
@@ -517,7 +549,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               'Contact Us',
                               style: TextStyle(
                                 fontSize: 16,
-                                // fontSize: screenWidth < 600 ? 12 : 15,
                                 color: Colors.black,
                               ),
                             ),
@@ -528,7 +559,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              SizedBox(height: screenWidth < 600 ? 170 :330), // Adjust spacing for larger screens
+              SizedBox(height: 40), // Adjust spacing for larger screens
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -546,9 +577,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Log Out',
-                              style: TextStyle(
-                                fontSize: screenWidth < 600 ? 16 : 19,
-                                color: Colors.black,
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenWidth < 600 ? 16 : 19,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
@@ -570,9 +603,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Delete Profile',
-                              style: TextStyle(
-                                fontSize: screenWidth < 600 ? 16 : 19,
-                                color: Colors.black,
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenWidth < 600 ? 16 : 19,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
@@ -588,6 +623,4 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-
 }

@@ -48,7 +48,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
           questions = json.decode(response.body) as List<dynamic>;
           isLoading = false;
         });
-        speak(questions[currentQuestionIndex]['question']); // Speak the first question
+        // Speak the first question
       } else {
         setState(() {
           errorMessage = 'Failed to load questions';
@@ -154,7 +154,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
                       currentQuestionIndex++;
                       selectedChoice = null;
                     });
-                    speak(questions[currentQuestionIndex]['question']); // Speak the next question
                   } else {
                     Navigator.pushReplacement(
                       context,
@@ -204,8 +203,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
             ),
           ),
         );
-      } else {
-        speak(questions[currentQuestionIndex]['question']); // Speak the next question
       }
     });
   }
@@ -215,6 +212,16 @@ class _QuestionsPageState extends State<QuestionsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.topicName} Questions'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.volume_up),
+            onPressed: () {
+              if (questions.isNotEmpty) {
+                speak(questions[currentQuestionIndex]['question']);
+              }
+            },
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -365,4 +372,14 @@ class _QuestionsPageState extends State<QuestionsPage> {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: QuestionsPage(
+      topicId: 1,
+      topicName: 'Sample Topic',
+      subjectName: 'Sample Subject',
+    ),
+  ));
 }
