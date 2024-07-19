@@ -8,6 +8,7 @@ import 'package:system_auth/screens/onboarding/middlepage.dart';
 import 'package:system_auth/screens/onboarding/splashscreen.dart';
 import 'package:system_auth/themes/theme_provider.dart';
 import 'package:system_auth/trialpages/apply.dart';
+import 'package:system_auth/trialpages/settings.dart';
 
 void main() {
   runApp(
@@ -27,7 +28,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return  MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+       home: SplashScreen(),
+      //  home: SettingsPage(),
     );
   }
 }

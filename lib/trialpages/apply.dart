@@ -5,8 +5,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:system_auth/config.dart';
+import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/home/profile/userprofile.dart';
 import 'package:system_auth/screens/home/topics.dart';
+import 'package:system_auth/trialpages/notification.dart';
 import '../screens/home/dailyquiz.dart';
 
 class Homepage extends StatefulWidget {
@@ -49,8 +51,11 @@ class _PamelaState extends State<Homepage> {
         final data = jsonDecode(response.body);
         final username = data['username'] as String;
         setState(() {
-          _firstName = username.split(' ')[0]; // Get the first name from the username
-          _initials = _firstName!.substring(0, 2).toUpperCase(); // Get the first two letters of the first name
+          _firstName =
+              username.split(' ')[0]; // Get the first name from the username
+          _initials = _firstName!
+              .substring(0, 2)
+              .toUpperCase(); // Get the first two letters of the first name
         });
       } else {
         print('Failed to load user data. Status code: ${response.statusCode}');
@@ -79,7 +84,8 @@ class _PamelaState extends State<Homepage> {
         List<dynamic> body = json.decode(response.body);
         return body.map((dynamic item) => Subject.fromJson(item)).toList();
       } else {
-        throw Exception('Failed to load subjects. Status code: ${response.statusCode}');
+        throw Exception(
+            'Failed to load subjects. Status code: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error fetching subjects: $e');
@@ -94,19 +100,24 @@ class _PamelaState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: const Color(0xFFFDF7F2),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          HomeScreen(subjectsFuture: _subjectsFuture, firstName: _firstName, initials: _initials),
+          HomeScreen(
+              subjectsFuture: _subjectsFuture,
+              firstName: _firstName,
+              initials: _initials),
           const ProfilePage(),
-          const SettingsScreen(),
-          const NotificationsScreen(),
+          SettingsPage(),
+          // const NotificationsScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF6200EE),
+        // backgroundColor: const Color(0xFF6200EE),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -120,10 +131,10 @@ class _PamelaState extends State<Homepage> {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.notifications),
+          //   label: 'Notifications',
+          // ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color.fromARGB(255, 23, 21, 178),
@@ -139,7 +150,9 @@ class HomeScreen extends StatelessWidget {
   final String? firstName;
   final String? initials;
 
-  const HomeScreen({Key? key, required this.subjectsFuture, this.firstName, this.initials}) : super(key: key);
+  const HomeScreen(
+      {Key? key, required this.subjectsFuture, this.firstName, this.initials})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -247,9 +260,11 @@ class HomeScreen extends StatelessWidget {
 
     // Use different image paths based on the label or any other identifier
     if (label == 'Exp. Points') {
-      imagePath = 'assets/star.gif'; // Replace with your static image for Exp. Points
+      imagePath =
+          'assets/star.gif'; // Replace with your static image for Exp. Points
     } else if (label == 'Questions Done') {
-      imagePath = 'assets/soma1.png'; // Replace with your static image for Ranking
+      imagePath =
+          'assets/soma1.png'; // Replace with your static image for Ranking
     }
 
     return Row(
@@ -320,7 +335,9 @@ class HomeScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => DailyQuizScreen()), // Navigate to DailyQuizPage
+          MaterialPageRoute(
+              builder: (context) =>
+                  DailyQuizScreen()), // Navigate to DailyQuizPage
         );
       },
       child: Container(
@@ -388,7 +405,8 @@ class HomeScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error fetching subjects: ${snapshot.error}'));
+          return Center(
+              child: Text('Error fetching subjects: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No subjects available.'));
         } else {
@@ -412,7 +430,8 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => TopicsPage(
                   subjectId: subject.id,
-                  subjectName: subject.name ?? 'No name', subject_name: '',
+                  subjectName: subject.name ?? 'No name',
+                  subject_name: '',
                 ),
               ),
             );
@@ -464,34 +483,168 @@ class Subject {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
+class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(
+          'Settings',
+          style: GoogleFonts.poppins(
+            textStyle: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
       ),
-      body: const Center(
-        child: Text('Profile Page'),
+      body: ListView(
+        padding: EdgeInsets.all(16),
+        children: [
+          _buildSectionTitle('GENERAL'),
+          _buildListTile(
+            context,
+            icon: Icons.person,
+            title: 'Account',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+              // Navigate to Account settings
+            },
+          ),
+          _buildListTile(
+            context,
+            icon: Icons.notifications,
+            title: 'Notifications',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NotificationsPage(),
+                ),
+              );
+              // Navigate to Notifications settings
+            },
+          ),
+          _buildListTile(
+            context,
+            icon: Icons.card_giftcard,
+            title: 'Coupons',
+            onTap: () {
+              // Navigate to Coupons settings
+            },
+          ),
+          _buildListTile(
+            context,
+            icon: Icons.logout,
+            title: 'Logout',
+            
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Confirm Logout'),
+                    content: Text('Are you sure you want to log out?'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('No'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: Text('Yes'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LogIn(),
+                            ),
+                          );
+                          // Perform logout action
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          // _buildListTile(
+          //   context,
+          //   icon: Icons.delete,
+          //   title: 'Delete account',
+          //   onTap: () {
+          //     // Navigate to Delete account settings
+          //   },
+          // ),
+          SizedBox(height: 16),
+          _buildSectionTitle('FEEDBACK'),
+          _buildListTile(
+            context,
+            icon: Icons.bug_report,
+            title: 'Report a bug',
+            onTap: () {
+              // Navigate to Report a bug page
+            },
+          ),
+          _buildListTile(
+            context,
+            icon: Icons.feedback,
+            title: 'Send feedback',
+            onTap: () {
+              // Navigate to Send feedback page
+            },
+          ),
+        ],
+      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: const <BottomNavigationBarItem>[
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home),
+      //       label: 'Home',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.settings),
+      //       label: 'Settings',
+      //     ),
+      //   ],
+      //   currentIndex: 1, // Set the selected index to Settings
+      //   selectedItemColor: Colors.blue,
+      // ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey[600],
+        ),
       ),
     );
   }
-}
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: const Center(
-        child: Text('Settings Page'),
-      ),
+  Widget _buildListTile(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required VoidCallback onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blue),
+      title: Text(title),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
     );
   }
 }
