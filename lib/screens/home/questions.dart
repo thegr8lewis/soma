@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
@@ -60,7 +62,10 @@ class _QuestionsPageState extends State<QuestionsPage> {
 
   Future<void> fetchQuestions() async {
     try {
-      final response = await http.get(Uri.parse('$BASE_URL/questions/${widget.subjectName}/${widget.topicId}'));
+      final response = await http.get(
+        Uri.parse('$BASE_URL/questions/${widget.subjectName}/${widget.topicId}'),
+      );
+
       if (response.statusCode == 200) {
         setState(() {
           questions = json.decode(response.body) as List<dynamic>;
@@ -70,19 +75,47 @@ class _QuestionsPageState extends State<QuestionsPage> {
         if (currentQuestionIndex < questions.length) {
           speak(questions[currentQuestionIndex]['question']);
         }
+      } else if (response.statusCode == 401) {
+        setState(() {
+          errorMessage = 'Unauthorized request. Please check your credentials.';
+          isLoading = false;
+        });
       } else {
         setState(() {
-          errorMessage = 'Failed to load questions';
+          errorMessage = 'Failed to load questions. Status code: ${response.statusCode}';
           isLoading = false;
         });
       }
+    } on SocketException catch (_) {
+      SizedBox(
+        child: Lottie.asset(
+          'assets/network.json',
+          repeat: true,
+          width: 110,
+        ),
+      );
+      setState(() {
+        errorMessage = 'No Internet connection. Please check your network.';
+        isLoading = false;
+      });
+    } on HttpException catch (_) {
+      setState(() {
+        errorMessage = 'Could not find the requested resource.';
+        isLoading = false;
+      });
+    } on FormatException catch (_) {
+      setState(() {
+        errorMessage = 'Bad response format. Unable to parse the data.';
+        isLoading = false;
+      });
     } catch (e) {
       setState(() {
-        errorMessage = e.toString();
+        errorMessage = 'Error fetching questions: $e';
         isLoading = false;
       });
     }
   }
+
 
   Future<void> speak(String text) async {
     final url = Uri.parse('https://api.voicerss.org/');
@@ -332,10 +365,12 @@ class _QuestionsPageState extends State<QuestionsPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 150, // Set the desired width
-                height: 150, // Set the desired height
-                child: Lottie.network('https://lottie.host/c4d75a88-82d9-460a-910a-7757db3c3d3d/lJiU0DGYeW.json'),
+               SizedBox(
+                child: Lottie.asset(
+                  'assets/books.json',
+                  repeat: true,
+                  width: 110,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(

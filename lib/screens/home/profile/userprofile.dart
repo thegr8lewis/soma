@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -54,76 +56,145 @@ class _ProfilePageState extends State<ProfilePage> {
           _grade = data['grade'];
           _isLoading = false;
         });
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+          _errorMessage = 'Unauthorized request. Please check your credentials.';
+        });
       } else {
         setState(() {
           _hasError = true;
           _isLoading = false;
-          _errorMessage = 'Failed to load user data';
+          _errorMessage = 'Failed to load user data. Status code: ${response.statusCode}';
         });
       }
+    } on SocketException catch (_) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+        _errorMessage = 'No Internet connection. Please check your network.';
+      });
+    } on HttpException catch (_) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+        _errorMessage = 'Could not find the requested resource.';
+      });
+    } on FormatException catch (_) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+        _errorMessage = 'Bad response format. Unable to parse the data.';
+      });
     } catch (e) {
       setState(() {
         _hasError = true;
         _isLoading = false;
-        _errorMessage = 'Error fetching user data';
+        _errorMessage = 'Error fetching user data: $e';
       });
     }
   }
 
   Future<void> _updateProfile(String newName, int newGrade) async {
-    final sessionCookie = await _storage.read(key: 'session_cookie');
-    final response = await http.put(
-      Uri.parse('$BASE_URL/update'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Cookie': sessionCookie ?? '',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'username': newName,
-        'grade': newGrade,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      setState(() {
-        _name = newName;
-        _grade = newGrade;
-        _updateErrorMessage = '';
-      });
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfilePage()),
+    try {
+      final sessionCookie = await _storage.read(key: 'session_cookie');
+      final response = await http.put(
+        Uri.parse('$BASE_URL/update'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Cookie': sessionCookie ?? '',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'username': newName,
+          'grade': newGrade,
+        }),
       );
-    } else {
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _name = newName;
+          _grade = newGrade;
+          _updateErrorMessage = '';
+        });
+        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+        );
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _updateErrorMessage = 'Unauthorized request. Please check your credentials.';
+        });
+      } else {
+        setState(() {
+          _updateErrorMessage = 'Failed to update. Status code: ${response.statusCode}';
+        });
+      }
+    } on SocketException catch (_) {
       setState(() {
-        _updateErrorMessage = 'Failed to update';
+        _updateErrorMessage = 'No Internet connection. Please check your network.';
+      });
+    } on HttpException catch (_) {
+      setState(() {
+        _updateErrorMessage = 'Could not find the requested resource.';
+      });
+    } on FormatException catch (_) {
+      setState(() {
+        _updateErrorMessage = 'Bad response format. Unable to parse the data.';
+      });
+    } catch (e) {
+      setState(() {
+        _updateErrorMessage = 'Error updating profile: $e';
       });
     }
   }
 
   Future<void> _deleteProfile() async {
-    final sessionCookie = await _storage.read(key: 'session_cookie');
-    final response = await http.delete(
-      Uri.parse('$BASE_URL/delete'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': sessionCookie ?? '',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      // Profile successfully deleted, navigate to home screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LogIn()),
+    try {
+      final sessionCookie = await _storage.read(key: 'session_cookie');
+      final response = await http.delete(
+        Uri.parse('$BASE_URL/delete'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': sessionCookie ?? '',
+        },
       );
-    } else {
+
+      if (response.statusCode == 200) {
+        // Profile successfully deleted, navigate to home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LogIn()),
+        );
+      } else if (response.statusCode == 401) {
+        setState(() {
+          _updateErrorMessage = 'Unauthorized request. Please check your credentials.';
+        });
+      } else {
+        setState(() {
+          _updateErrorMessage = 'Failed to delete profile. Status code: ${response.statusCode}';
+        });
+      }
+    } on SocketException catch (_) {
       setState(() {
-        _updateErrorMessage = 'Failed to delete Profile';
+        _updateErrorMessage = 'No Internet connection. Please check your network.';
+      });
+    } on HttpException catch (_) {
+      setState(() {
+        _updateErrorMessage = 'Could not find the requested resource.';
+      });
+    } on FormatException catch (_) {
+      setState(() {
+        _updateErrorMessage = 'Bad response format. Unable to parse the data.';
+      });
+    } catch (e) {
+      setState(() {
+        _updateErrorMessage = 'Error deleting profile: $e';
       });
     }
   }
+
 
   void _showUpdateBottomSheet() {
     final TextEditingController nameController = TextEditingController(text: _name);

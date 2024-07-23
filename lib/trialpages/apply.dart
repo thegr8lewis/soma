@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -84,14 +86,28 @@ class _PamelaState extends State<Homepage> {
       if (response.statusCode == 200) {
         List<dynamic> body = json.decode(response.body);
         return body.map((dynamic item) => Subject.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
         throw Exception(
             'Failed to load subjects. Status code: ${response.statusCode}');
       }
+    } on SocketException catch (_) {
+      SizedBox(
+        child: Lottie.asset(
+          'assets/network.json',
+          repeat: true,
+          width: 110,
+        ),
+      );
+      throw Exception('No Internet connection. Please check your network.');
+    } on HttpException catch (_) {
+      throw Exception('Could not find the requested resource.');
     } catch (e) {
       throw Exception('Error fetching subjects: $e');
     }
   }
+
 
   void _onItemTapped(int index) {
     setState(() {
@@ -185,14 +201,6 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
-                        ),
-                      );
-                    },
                     child: SizedBox(
                       child: Lottie.asset(
                         'assets/books.json',
@@ -373,7 +381,18 @@ class HomeScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: Lottie.asset('assets/loader.json', width: 50)); // Use a Lottie animation for loading
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error fetching subjects: ${snapshot.error}'));
+          // Check if the error is a network error
+          if (snapshot.error.toString().contains('NetworkError')) {
+            return SizedBox(
+              child: Lottie.asset(
+                'assets/network.json',
+                repeat: true,
+                width: 110,
+              ),
+            );
+          } else {
+            return const Center(child: Text('Error fetching subjects:'));
+          }
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No subjects available.'));
         } else {
@@ -382,6 +401,7 @@ class HomeScreen extends StatelessWidget {
       },
     );
   }
+
 
   Widget _buildSubjectsList(List<Subject> subjects, BuildContext context) {
     return ListView.builder(
@@ -457,7 +477,7 @@ class SettingsPage extends StatelessWidget {
         title: Text(
           'Settings',
           style: GoogleFonts.poppins(
-            textStyle: TextStyle(
+            textStyle: const TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
               color: Colors.black,
@@ -466,7 +486,7 @@ class SettingsPage extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
           _buildSectionTitle('GENERAL'),
           _buildListTile(
@@ -477,7 +497,7 @@ class SettingsPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProfilePage(),
+                  builder: (context) => const ProfilePage(),
                 ),
               );
               // Navigate to Account settings
@@ -517,7 +537,7 @@ class SettingsPage extends StatelessWidget {
                     title: Text(
                       'Confirm Logout',
                       style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
+                        textStyle: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -526,7 +546,7 @@ class SettingsPage extends StatelessWidget {
                     content: Text(
                       'Are you sure you want to log out?',
                       style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
+                        textStyle: const TextStyle(
                           fontSize: 16,
                         ),
                       ),
@@ -536,7 +556,7 @@ class SettingsPage extends StatelessWidget {
                         child: Text(
                           'No',
                           style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
+                            textStyle: const TextStyle(
                               fontSize: 16,
                               color: Colors.blue,
                             ),
@@ -550,7 +570,7 @@ class SettingsPage extends StatelessWidget {
                         child: Text(
                           'Yes',
                           style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
+                            textStyle: const TextStyle(
                               fontSize: 16,
                               color: Colors.blue,
                             ),
@@ -561,7 +581,7 @@ class SettingsPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => LogIn(),
+                              builder: (context) => const LogIn(),
                             ),
                           );
                           // Perform logout action
@@ -573,7 +593,7 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildSectionTitle('FEEDBACK'),
           _buildListTile(
             context,
@@ -619,12 +639,12 @@ class SettingsPage extends StatelessWidget {
       title: Text(
         title,
         style: GoogleFonts.poppins(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: 16,
           ),
         ),
       ),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
   }

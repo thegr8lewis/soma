@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
@@ -48,12 +50,19 @@ class _TopicsPageState extends State<TopicsPage> {
           topics = parsedTopics.cast<Map<String, dynamic>>();
           isLoading = false;
         });
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception('Failed to load topics');
+        throw Exception('Failed to load topics. Status code: ${response.statusCode}');
       }
+    } on SocketException catch (_) {
+      throw Exception('No Internet connection. Please check your network.');
+    } on HttpException catch (_) {
+      throw Exception('Could not find the requested resource.');
+    } on FormatException catch (_) {
+      throw Exception('Bad response format. Unable to parse the data.');
     } catch (e) {
-      print('Error fetching topics: $e');
-      // Handle error as needed
+      throw Exception('Error fetching topics: ');
     }
   }
 
@@ -66,14 +75,22 @@ class _TopicsPageState extends State<TopicsPage> {
       if (response.statusCode == 200) {
         final questions = json.decode(response.body) as List<dynamic>;
         return questions.length;
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception('Failed to load questions');
+        throw Exception('Failed to load questions. Status code: ${response.statusCode}');
       }
+    } on SocketException catch (_) {
+      throw Exception('No Internet connection. Please check your network.');
+    } on HttpException catch (_) {
+      throw Exception('Could not find the requested resource.');
+    } on FormatException catch (_) {
+      throw Exception('Bad response format. Unable to parse the data.');
     } catch (e) {
-      print('Error fetching total questions: $e');
-      return 0;
+      throw Exception('Error fetching total questions: ');
     }
   }
+
 
   Widget _buildSkeletonLoader() {
     return ListView.builder(
