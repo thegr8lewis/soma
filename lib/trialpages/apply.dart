@@ -53,7 +53,7 @@ class _PamelaState extends State<Homepage> {
         final username = data['username'] as String;
         setState(() {
           _firstName =
-              username.split(' ')[0]; // Get the first name from the username
+          username.split(' ')[0]; // Get the first name from the username
           _initials = _firstName!
               .substring(0, 2)
               .toUpperCase(); // Get the first two letters of the first name
@@ -167,7 +167,7 @@ class HomeScreen extends StatelessWidget {
                         '👋 Hi ${firstName ?? 'There'},',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
@@ -177,7 +177,7 @@ class HomeScreen extends StatelessWidget {
                         'Great to see you again!',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 19,
+                            fontSize: 15,
                             color: Colors.brown,
                           ),
                         ),
@@ -193,23 +193,12 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: CircleAvatar(
-                      radius: 21,
-                      backgroundColor: Colors.lime,
-                      child: initials != null
-                          ? Text(
-                              initials!,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.person,
-                              size: 42.0,
-                              color: Colors.black,
-                            ),
+                    child: SizedBox(
+                      child: Lottie.asset(
+                        'assets/books.json',
+                        repeat: true,
+                        width: 110,
+                      ),
                     ),
                   ),
                 ],
@@ -254,10 +243,10 @@ class HomeScreen extends StatelessWidget {
     // Use different image paths based on the label or any other identifier
     if (label == 'Exp. Points') {
       imagePath =
-          'assets/star.gif'; // Replace with your static image for Exp. Points
+      'assets/star.gif'; // Replace with your static image for Exp. Points
     } else if (label == 'Questions Done') {
       imagePath =
-          'assets/soma1.png'; // Replace with your static image for Ranking
+      'assets/soma1.png'; // Replace with your static image for Ranking
     }
 
     return Row(
@@ -401,9 +390,6 @@ class HomeScreen extends StatelessWidget {
       itemCount: subjects.length,
       itemBuilder: (context, index) {
         final subject = subjects[index];
-        // Example of using Lorem Picsum to get random images
-        final imageUrl = 'https://picsum.photos/seed/$index/250/150';
-        
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -411,31 +397,29 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => TopicsPage(
                   subjectId: subject.id,
-                  subjectName: subject.name ?? 'No name',
-                  subject_name: '',
+                  subjectName: subject.name ?? 'No name', subject_name: '',
                 ),
               ),
             );
           },
-          child: Container(
-            height: 100, // Set the height you want
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
+          child: Card(
+            child: ListTile(
+              title: Text(
+                subject.name ?? 'No name',
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.brown,
+                  ),
+                ),
               ),
-            ),
-            child: Card(
-              color: Colors.transparent, // Set Card color to transparent
-              child: ListTile(
-                title: Text(
-                  subject.name ?? 'No name',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // Change text color to contrast with background
-                    ),
+              subtitle: Text(
+                subject.description ?? '0 questions done',
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
                   ),
                 ),
               ),

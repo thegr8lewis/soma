@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../../config.dart';
@@ -37,7 +38,24 @@ class _QuestionsPageState extends State<QuestionsPage> {
   @override
   void initState() {
     super.initState();
+    loadProgress();
     fetchQuestions();
+  }
+
+  Future<void> loadProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentQuestionIndex = prefs.getInt('currentQuestionIndex') ?? 0;
+      score = prefs.getInt('score') ?? 0;
+      questionsAttempted = prefs.getInt('questionsAttempted') ?? 0;
+    });
+  }
+
+  Future<void> saveProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentQuestionIndex', currentQuestionIndex);
+    await prefs.setInt('score', score);
+    await prefs.setInt('questionsAttempted', questionsAttempted);
   }
 
   Future<void> fetchQuestions() async {
@@ -49,6 +67,9 @@ class _QuestionsPageState extends State<QuestionsPage> {
           isLoading = false;
         });
         // Speak the first question
+        if (currentQuestionIndex < questions.length) {
+          speak(questions[currentQuestionIndex]['question']);
+        }
       } else {
         setState(() {
           errorMessage = 'Failed to load questions';
@@ -97,6 +118,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
     }
 
     questionsAttempted++;
+    saveProgress();
 
     showModalBottomSheet(
       context: context,
@@ -154,6 +176,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
                       currentQuestionIndex++;
                       selectedChoice = null;
                     });
+                    saveProgress();
                   } else {
                     Navigator.pushReplacement(
                       context,
@@ -205,6 +228,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
         );
       }
     });
+    saveProgress();
   }
 
   @override

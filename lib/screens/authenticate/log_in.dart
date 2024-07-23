@@ -88,62 +88,74 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
     final String email = _emailController.text;
     final String password = _passwordController.text;
 
-    final response = await http.post(
-      Uri.parse('$BASE_URL/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': email,
-        'password': password,
-        'remember': _rememberMe,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$BASE_URL/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'remember': _rememberMe,
+        }),
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
 
-      // Extract the session cookie from the response headers if remember me is true
-      if (_rememberMe) {
-        final cookies = response.headers['set-cookie'];
-        if (cookies != null) {
-          _sessionCookie = cookies;
-          await _storage.write(key: 'session_cookie', value: cookies);
+        // Extract the session cookie from the response headers if remember me is true
+        if (_rememberMe) {
+          final cookies = response.headers['set-cookie'];
+          if (cookies != null) {
+            _sessionCookie = cookies;
+            await _storage.write(key: 'session_cookie', value: cookies);
+          }
+
+          await _storage.write(key: 'remember_me', value: 'true');
+          await _storage.write(key: 'email', value: email);
+        } else {
+          await _storage.delete(key: 'remember_me');
+          await _storage.delete(key: 'email');
         }
 
-        await _storage.write(key: 'remember_me', value: 'true');
-        await _storage.write(key: 'email', value: email);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Homepage()),
+        );
       } else {
-        await _storage.delete(key: 'remember_me');
-        await _storage.delete(key: 'email');
+        _showErrorDialog('Login Failed', 'Invalid email or password');
       }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Homepage()),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Login Failed'),
-            content: const Text('Invalid email or password'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showErrorDialog('Network Error', 'Please check your internet connection and try again.');
     }
   }
+
+  void _showErrorDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {

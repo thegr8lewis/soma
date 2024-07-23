@@ -129,7 +129,7 @@ class _TopicsPageState extends State<TopicsPage> {
         title: Text(
           widget.subjectName,
           style: GoogleFonts.poppins(
-            textStyle: TextStyle(
+            textStyle: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
               color: Colors.black,
@@ -164,17 +164,17 @@ class _TopicsPageState extends State<TopicsPage> {
                       title: Text(
                         topic['topic_name'] ?? 'No name', // Use null-aware operator
                         style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Colors.brown,
                           ),
                         ),
                       ),
                       trailing: Text(
-                        '${topic['total_questions'] ?? 0} questions', // Display total questions
+                        '${topic['total_questions'] ?? 0} Q', // Display total questions
                         style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             fontSize: 16,
                             color: Colors.black,
                           ),
