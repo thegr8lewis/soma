@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,7 +55,7 @@ class _PamelaState extends State<Homepage> {
         final username = data['username'] as String;
         setState(() {
           _firstName =
-              username.split(' ')[0]; // Get the first name from the username
+          username.split(' ')[0]; // Get the first name from the username
           _initials = _firstName!
               .substring(0, 2)
               .toUpperCase(); // Get the first two letters of the first name
@@ -84,14 +86,28 @@ class _PamelaState extends State<Homepage> {
       if (response.statusCode == 200) {
         List<dynamic> body = json.decode(response.body);
         return body.map((dynamic item) => Subject.fromJson(item)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
         throw Exception(
             'Failed to load subjects. Status code: ${response.statusCode}');
       }
+    } on SocketException catch (_) {
+      SizedBox(
+        child: Lottie.asset(
+          'assets/network.json',
+          repeat: true,
+          width: 110,
+        ),
+      );
+      throw Exception('No Internet connection. Please check your network.');
+    } on HttpException catch (_) {
+      throw Exception('Could not find the requested resource.');
     } catch (e) {
       throw Exception('Error fetching subjects: $e');
     }
   }
+
 
   void _onItemTapped(int index) {
     setState(() {
@@ -111,7 +127,7 @@ class _PamelaState extends State<Homepage> {
               firstName: _firstName,
               initials: _initials),
           const ProfilePage(),
-          SettingsPage(),
+          // SettingsPage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -121,13 +137,13 @@ class _PamelaState extends State<Homepage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.settings),
+          //   label: 'Settings',
+          // ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
@@ -167,7 +183,7 @@ class HomeScreen extends StatelessWidget {
                         '👋 Hi ${firstName ?? 'There'},',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
@@ -177,7 +193,7 @@ class HomeScreen extends StatelessWidget {
                         'Great to see you again!',
                         style: GoogleFonts.poppins(
                           textStyle: const TextStyle(
-                            fontSize: 19,
+                            fontSize: 15,
                             color: Colors.brown,
                           ),
                         ),
@@ -185,31 +201,12 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
-                        ),
-                      );
-                    },
-                    child: CircleAvatar(
-                      radius: 21,
-                      backgroundColor: Colors.lime,
-                      child: initials != null
-                          ? Text(
-                              initials!,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.person,
-                              size: 42.0,
-                              color: Colors.black,
-                            ),
+                    child: SizedBox(
+                      child: Lottie.asset(
+                        'assets/books.json',
+                        repeat: true,
+                        width: 110,
+                      ),
                     ),
                   ),
                 ],
@@ -254,10 +251,10 @@ class HomeScreen extends StatelessWidget {
     // Use different image paths based on the label or any other identifier
     if (label == 'Exp. Points') {
       imagePath =
-          'assets/star.gif'; // Replace with your static image for Exp. Points
+      'assets/star.gif'; // Replace with your static image for Exp. Points
     } else if (label == 'Questions Done') {
       imagePath =
-          'assets/soma1.png'; // Replace with your static image for Ranking
+      'assets/soma1.png'; // Replace with your static image for Ranking
     }
 
     return Row(
@@ -384,7 +381,18 @@ class HomeScreen extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: Lottie.asset('assets/loader.json', width: 50)); // Use a Lottie animation for loading
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error fetching subjects: ${snapshot.error}'));
+          // Check if the error is a network error
+          if (snapshot.error.toString().contains('NetworkError')) {
+            return SizedBox(
+              child: Lottie.asset(
+                'assets/network.json',
+                repeat: true,
+                width: 110,
+              ),
+            );
+          } else {
+            return const Center(child: Text('Error fetching subjects:'));
+          }
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No subjects available.'));
         } else {
@@ -394,6 +402,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+
   Widget _buildSubjectsList(List<Subject> subjects, BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
@@ -401,9 +410,6 @@ class HomeScreen extends StatelessWidget {
       itemCount: subjects.length,
       itemBuilder: (context, index) {
         final subject = subjects[index];
-        // Example of using Lorem Picsum to get random images
-        final imageUrl = 'https://picsum.photos/seed/$index/250/150';
-        
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -411,33 +417,37 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => TopicsPage(
                   subjectId: subject.id,
-                  subjectName: subject.name ?? 'No name',
-                  subject_name: '',
+                  subjectName: subject.name ?? 'No name', subject_name: '',
                 ),
               ),
             );
           },
-          child: Container(
-            height: 100, // Set the height you want
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: Card(
-              color: Colors.transparent, // Set Card color to transparent
+          child: Card(
+            elevation: 4,
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: Container(
+              height: 100,
               child: ListTile(
+                contentPadding: EdgeInsets.all(16),
                 title: Text(
                   subject.name ?? 'No name',
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      fontSize: 19,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // Change text color to contrast with background
+                      color: Colors.brown,
                     ),
                   ),
                 ),
+                // subtitle: Text(
+                //   subject.description ?? '0 questions done',
+                //   style: GoogleFonts.poppins(
+                //     textStyle: const TextStyle(
+                //       fontSize: 16,
+                //       color: Colors.black,
+                //     ),
+                //   ),
+                // ),
               ),
             ),
           ),
@@ -473,7 +483,7 @@ class SettingsPage extends StatelessWidget {
         title: Text(
           'Settings',
           style: GoogleFonts.poppins(
-            textStyle: TextStyle(
+            textStyle: const TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
               color: Colors.black,
@@ -482,7 +492,7 @@ class SettingsPage extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
           _buildSectionTitle('GENERAL'),
           _buildListTile(
@@ -493,7 +503,7 @@ class SettingsPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProfilePage(),
+                  builder: (context) => const ProfilePage(),
                 ),
               );
               // Navigate to Account settings
@@ -533,7 +543,7 @@ class SettingsPage extends StatelessWidget {
                     title: Text(
                       'Confirm Logout',
                       style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
+                        textStyle: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -542,7 +552,7 @@ class SettingsPage extends StatelessWidget {
                     content: Text(
                       'Are you sure you want to log out?',
                       style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
+                        textStyle: const TextStyle(
                           fontSize: 16,
                         ),
                       ),
@@ -552,7 +562,7 @@ class SettingsPage extends StatelessWidget {
                         child: Text(
                           'No',
                           style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
+                            textStyle: const TextStyle(
                               fontSize: 16,
                               color: Colors.blue,
                             ),
@@ -566,7 +576,7 @@ class SettingsPage extends StatelessWidget {
                         child: Text(
                           'Yes',
                           style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
+                            textStyle: const TextStyle(
                               fontSize: 16,
                               color: Colors.blue,
                             ),
@@ -577,7 +587,7 @@ class SettingsPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => LogIn(),
+                              builder: (context) => const LogIn(),
                             ),
                           );
                           // Perform logout action
@@ -589,7 +599,7 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildSectionTitle('FEEDBACK'),
           _buildListTile(
             context,
@@ -635,12 +645,12 @@ class SettingsPage extends StatelessWidget {
       title: Text(
         title,
         style: GoogleFonts.poppins(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: 16,
           ),
         ),
       ),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
   }

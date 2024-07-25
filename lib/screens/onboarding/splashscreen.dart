@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:system_auth/screens/onboarding/info/on.dart';
 import 'package:system_auth/trialpages/apply.dart';
 
@@ -40,12 +41,29 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Container(
-          height: 300,
-          width: 300,
-          child: Center(
-            child: Image.asset('assets/soma2.png'),
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: 300,
+              width: 300,
+              child: Image.asset('assets/soma2.png'),
+            ),
+            SizedBox(height: 30),
+            Center(
+              child: Text(
+                'Access Education under the dollar',
+                style: GoogleFonts.poppins(
+                  textStyle: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black,
+                  ),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ),
     );

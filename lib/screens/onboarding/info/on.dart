@@ -85,7 +85,8 @@ class IntroPage1 extends StatelessWidget {
             ),
             SizedBox(height: 20),
             Text(
-              'Unlock the world of knowledge and excel in your studies with Soma App',
+              // 'Unlock the world of knowledge and excel in your studies with Soma App',
+              'Get Access to Education content which is under the Dollar',
               style: GoogleFonts.poppins(
                 textStyle: TextStyle(
                   fontSize: 20,

@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../../config.dart';
@@ -33,35 +36,88 @@ class _QuestionsPageState extends State<QuestionsPage> {
   AudioPlayer audioPlayer = AudioPlayer();
 
   final String apiKey = 'e4e855cee27d4bba9b9f70391fc7ef33'; // Replace with your Voice RSS API key
+  final String correctAnswerSound = 'assets/correct.mp3'; // Path to correct answer sound
+  final String wrongAnswerSound = 'assets/wrong.mp3'; // Path to wrong answer sound
 
   @override
   void initState() {
     super.initState();
+    loadProgress();
     fetchQuestions();
+  }
+
+  Future<void> loadProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentQuestionIndex = prefs.getInt('currentQuestionIndex') ?? 0;
+      score = prefs.getInt('score') ?? 0;
+      questionsAttempted = prefs.getInt('questionsAttempted') ?? 0;
+    });
+  }
+
+  Future<void> saveProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('currentQuestionIndex', currentQuestionIndex);
+    await prefs.setInt('score', score);
+    await prefs.setInt('questionsAttempted', questionsAttempted);
   }
 
   Future<void> fetchQuestions() async {
     try {
-      final response = await http.get(Uri.parse('$BASE_URL/questions/${widget.subjectName}/${widget.topicId}'));
+      final response = await http.get(
+        Uri.parse('$BASE_URL/questions/${widget.subjectName}/${widget.topicId}'),
+      );
+
       if (response.statusCode == 200) {
         setState(() {
           questions = json.decode(response.body) as List<dynamic>;
           isLoading = false;
         });
         // Speak the first question
+        if (currentQuestionIndex < questions.length) {
+          speak(questions[currentQuestionIndex]['question']);
+        }
+      } else if (response.statusCode == 401) {
+        setState(() {
+          errorMessage = 'Unauthorized request. Please check your credentials.';
+          isLoading = false;
+        });
       } else {
         setState(() {
-          errorMessage = 'Failed to load questions';
+          errorMessage = 'Failed to load questions. Status code: ${response.statusCode}';
           isLoading = false;
         });
       }
+    } on SocketException catch (_) {
+      SizedBox(
+        child: Lottie.asset(
+          'assets/network.json',
+          repeat: true,
+          width: 110,
+        ),
+      );
+      setState(() {
+        errorMessage = 'No Internet connection. Please check your network.';
+        isLoading = false;
+      });
+    } on HttpException catch (_) {
+      setState(() {
+        errorMessage = 'Could not find the requested resource.';
+        isLoading = false;
+      });
+    } on FormatException catch (_) {
+      setState(() {
+        errorMessage = 'Bad response format. Unable to parse the data.';
+        isLoading = false;
+      });
     } catch (e) {
       setState(() {
-        errorMessage = e.toString();
+        errorMessage = 'Error fetching questions: $e';
         isLoading = false;
       });
     }
   }
+
 
   Future<void> speak(String text) async {
     final url = Uri.parse('https://api.voicerss.org/');
@@ -86,6 +142,10 @@ class _QuestionsPageState extends State<QuestionsPage> {
     }
   }
 
+  void playSound(String soundPath) async {
+    await audioPlayer.play(AssetSource(soundPath));
+  }
+
   void checkAnswer() {
     if (selectedChoice == null) return;
 
@@ -94,9 +154,13 @@ class _QuestionsPageState extends State<QuestionsPage> {
 
     if (isCorrect) {
       score++;
+      playSound(correctAnswerSound);
+    } else {
+      playSound(wrongAnswerSound);
     }
 
     questionsAttempted++;
+    saveProgress();
 
     showModalBottomSheet(
       context: context,
@@ -154,6 +218,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
                       currentQuestionIndex++;
                       selectedChoice = null;
                     });
+                    saveProgress();
                   } else {
                     Navigator.pushReplacement(
                       context,
@@ -205,6 +270,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
         );
       }
     });
+    saveProgress();
   }
 
   @override
@@ -229,69 +295,69 @@ class _QuestionsPageState extends State<QuestionsPage> {
           ? Center(child: Text(errorMessage!))
           : questions.isEmpty
           ? const Center(child: Text('No questions available'))
-          : Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: LinearProgressIndicator(
-                        value: questionsAttempted / questions.length,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+          : SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: LinearProgressIndicator(
+                          value: questionsAttempted / questions.length,
+                          backgroundColor: Colors.grey[300],
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${questionsAttempted}/${questions.length}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton(
-                      onPressed: currentQuestionIndex >= questions.length - 1 ? null : skipQuestion,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.orange[800],
+                      const SizedBox(width: 8),
+                      Text(
+                        '${questionsAttempted}/${questions.length}',
+                        style: const TextStyle(fontSize: 16),
                       ),
-                      child: const Text('Skip'),
-                    ),
-                    ElevatedButton(
-                      onPressed: questionsAttempted == 0 ? null : () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CongratulationsPage(
-                              score: score,
-                              totalQuestions: questionsAttempted,
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: currentQuestionIndex >= questions.length - 1 ? null : skipQuestion,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.orange[800],
+                        ),
+                        child: const Text('Skip'),
+                      ),
+                      ElevatedButton(
+                        onPressed: questionsAttempted == 0 ? null : () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CongratulationsPage(
+                                score: score,
+                                totalQuestions: questionsAttempted,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: questionsAttempted == 0 ? Colors.grey : Colors.blue[800],
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: questionsAttempted == 0 ? Colors.grey : Colors.blue[800],
+                        ),
+                        child: const Text('Results'),
                       ),
-                      child: const Text('Results'),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: currentQuestionIndex < questions.length
+            currentQuestionIndex < questions.length
                 ? buildQuestion()
                 : const Center(child: Text('You have completed the quiz!')),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -308,10 +374,12 @@ class _QuestionsPageState extends State<QuestionsPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 150, // Set the desired width
-                height: 150, // Set the desired height
-                child: Lottie.network('https://lottie.host/c4d75a88-82d9-460a-910a-7757db3c3d3d/lJiU0DGYeW.json'),
+              SizedBox(
+                child: Lottie.asset(
+                  'assets/books.json',
+                  repeat: true,
+                  width: 110,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -329,7 +397,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
             ],
           ),
           const SizedBox(height: 20),
-          const Spacer(),
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: options

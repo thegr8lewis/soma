@@ -32,6 +32,7 @@ class _SignInState extends State<SignIn> {
   bool _passwordWeak = false;
   bool _passwordStarted = false;
   bool _confirmPasswordStarted = false;
+  bool _emailExists = false;
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -83,6 +84,10 @@ class _SignInState extends State<SignIn> {
         context,
         MaterialPageRoute(builder: (context) => const LogIn()),
       );
+    } else if (response.statusCode == 409) { // Assuming 409 is the status code for email already exists
+      setState(() {
+        _emailExists = true;
+      });
     } else {
       showDialog(
         context: context,
@@ -167,6 +172,14 @@ class _SignInState extends State<SignIn> {
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.03),
+                    Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          fontSize: screenHeight * 0.025,
+                          fontWeight: FontWeight.w100,
+                          color: Colors.black,
+                        ),
+                      ),)),
+                      SizedBox(height: screenHeight * 0.01),
                     Text(
                       'Enter the details to continue',
                       style: GoogleFonts.poppins(
@@ -294,7 +307,7 @@ class _SignInState extends State<SignIn> {
                       const Padding(
                         padding: EdgeInsets.only(top: 8.0),
                         child: Text(
-                          "password don't match",
+                          "Passwords don't match",
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
@@ -302,7 +315,15 @@ class _SignInState extends State<SignIn> {
                       const Padding(
                         padding: EdgeInsets.only(top: 8.0),
                         child: Text(
-                          "password weak",
+                          "Password is weak",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    if (_emailExists)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          "The email already exists",
                           style: TextStyle(color: Colors.red),
                         ),
                       ),
