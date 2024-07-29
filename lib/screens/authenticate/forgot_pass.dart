@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:system_auth/config.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:http/http.dart' as http;
@@ -16,7 +17,8 @@ class _ForgotPassState extends State<ForgotPass> {
   bool isEmailSelected = true;
   final TextEditingController _emailController = TextEditingController();
   bool isButtonEnabled = false;
-  bool _isLoading = false; // Add this line
+  bool _isLoading = false;
+  String? _message;
 
   @override
   void initState() {
@@ -37,7 +39,8 @@ class _ForgotPassState extends State<ForgotPass> {
 
   Future<void> _sendOTP() async {
     setState(() {
-      _isLoading = true; // Show the loader
+      _isLoading = true;
+      _message = null; // Clear previous message
     });
 
     final String email = _emailController.text;
@@ -45,7 +48,7 @@ class _ForgotPassState extends State<ForgotPass> {
     final response = await http.post(
       Uri.parse('$BASE_URL/forgot'), // Adjust the URL as needed
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({ 'email': email}),
+      body: json.encode({'email': email}),
     );
 
     setState(() {
@@ -53,45 +56,13 @@ class _ForgotPassState extends State<ForgotPass> {
     });
 
     if (response.statusCode == 200) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Password reset Successful'),
-            content: const Text('Check your email for the reset link'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LogIn()), // Assuming 'HomePage' is the home page widget
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      );
+      setState(() {
+        _message = 'Check your email for the reset link';
+      });
     } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Password reset failed'),
-            content: const Text('Failed to reset password. Please try again.'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      setState(() {
+        _message = 'Failed to reset password. Please try again.';
+      });
     }
   }
 
@@ -102,7 +73,7 @@ class _ForgotPassState extends State<ForgotPass> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor:  const Color(0xFFFDF7F2),
+        backgroundColor: const Color(0xFFFDF7F2),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -113,133 +84,128 @@ class _ForgotPassState extends State<ForgotPass> {
           },
         ),
       ),
-      body: Container(
-        width: screenWidth,
-        height: screenHeight,
-        color: const Color(0xFFFDF7F2),
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(screenWidth * 0.04),
-            child: Container(
-              width: screenWidth * 0.9,
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.06,
-                vertical: screenHeight * 0.045,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFDF7F2),
-                borderRadius: BorderRadius.circular(20.0),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10.0,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Forgot Password!',
-                    style: TextStyle(
-                      fontSize: screenHeight * 0.03,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+      body: SingleChildScrollView(
+        child: Container(
+          width: screenWidth,
+          height: screenHeight,
+          color: const Color(0xFFFDF7F2),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              child: Container(
+                width: screenWidth * 0.9,
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.06,
+                  vertical: screenHeight * 0.045,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDF7F2),
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10.0,
+                      offset: Offset(0, 10),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.02),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Enter the Registered Mail ID to get OTP',
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      child: Lottie.asset(
+                        'assets/books.json',
+                        repeat: true,
+                        width: screenWidth * 0.3,
+                      ),
+                    ),
+                    Text(
+                      'Forgot Password!',
                       style: TextStyle(
-                        fontSize: screenHeight * 0.018,
-                        fontWeight: FontWeight.w500,
+                        fontSize: screenHeight * 0.03,
+                        fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.05),
-                  Container(
-                    width: screenWidth * 0.9,
-                    height: screenHeight * 0.08,
-                    child: TextField(
-                      controller: _emailController,
-                      style: TextStyle(color: Colors.black),
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.email, color: Colors.grey),
-                        hintText: 'Email',
-                        hintStyle: const TextStyle(color: Colors.white),
-                        border: OutlineInputBorder(
+                    SizedBox(height: screenHeight * 0.02),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Enter yor Email to get the reset link',
+                        style: TextStyle(
+                          fontSize: screenHeight * 0.018,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.05),
+                    Container(
+                      width: screenWidth * 0.9,
+                      height: screenHeight * 0.08,
+                      child: TextField(
+                        controller: _emailController,
+                        style: TextStyle(color: Colors.black),
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.email, color: Colors.grey),
+                          hintText: 'Email',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.03),
+                    if (_message != null)
+                      Text(
+                        _message!,
+                        style: TextStyle(
+                          fontSize: screenHeight * 0.018,
+                          fontWeight: FontWeight.w500,
+                          color: _message == 'Check your email for the reset link'
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                    SizedBox(height: screenHeight * 0.02),
+                    ElevatedButton(
+                      onPressed: isButtonEnabled ? _sendOTP : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[500],
+                        textStyle: TextStyle(fontSize: screenHeight * 0.02),
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.green),
-                          borderRadius: BorderRadius.circular(10),
+                        padding: EdgeInsets.symmetric(
+                          vertical: screenHeight * 0.015,
+                          horizontal: screenWidth * 0.2,
+                        ),
+                      ),
+                      child: _isLoading
+                          ? LoadingAnimationWidget.staggeredDotsWave(
+                        color: Colors.white,
+                        size: screenHeight * 0.02,
+                      )
+                          : Text(
+                        'Refactor',
+                        style: TextStyle(
+                          fontSize: screenHeight * 0.02,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  ElevatedButton(
-                    onPressed: isButtonEnabled ? _sendOTP : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[500],
-                      textStyle: TextStyle(fontSize: screenHeight * 0.02),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: screenHeight * 0.015,
-                        horizontal: screenWidth * 0.2,
-                      ),
-                    ),
-                    child: _isLoading
-                        ? LoadingAnimationWidget.staggeredDotsWave(
-                      color: Colors.white,
-                      size: screenHeight * 0.02,
-                    )
-                        : Text(
-                      'Refactor',
-                      style: TextStyle(
-                        fontSize: screenHeight * 0.02,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOptionButton(String text, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          isEmailSelected = text == 'Email ID';
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE0F2F1) : Colors.white,
-          borderRadius: BorderRadius.circular(10.0),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF00796B) : Colors.grey,
-          ),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16,
-            color: isSelected ? const Color(0xFF00796B) : Colors.black,
           ),
         ),
       ),

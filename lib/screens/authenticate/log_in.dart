@@ -28,6 +28,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _animation;
   String? _sessionCookie;
+  String? _errorMessage;
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -81,6 +82,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
     final String email = _emailController.text;
@@ -124,34 +126,16 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
           MaterialPageRoute(builder: (context) => const Homepage()),
         );
       } else {
-        _showErrorDialog('Login Failed', 'Invalid email or password');
+        setState(() {
+          _errorMessage = 'Invalid email or password';
+        });
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _errorMessage = 'Please check your internet connection and try again.';
       });
-      _showErrorDialog('Network Error', 'Please check your internet connection and try again.');
     }
-  }
-
-  void _showErrorDialog(String title, String content) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -259,40 +243,18 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                         ),
                       ),
                     ),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: EdgeInsets.only(top: screenHeight * 0.01),
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red, fontSize: screenHeight * 0.02),
+                        ),
+                      ),
                     SizedBox(height: screenHeight * 0.02),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Row(
-                        //   children: [
-                        //     ValueListenableBuilder<bool>(
-                        //       valueListenable: _isButtonEnabled,
-                        //       builder: (context, value, child) {
-                        //         return Switch(
-                        //           value: _rememberMe,
-                        //           onChanged: value
-                        //               ? (bool newValue) {
-                        //             setState(() {
-                        //               _rememberMe = newValue;
-                        //             });
-                        //           }
-                        //               : null,
-                        //           activeColor: Colors.green,
-                        //         );
-                        //       },
-                        //     ),
-                        //     Text(
-                        //       'Remember me',
-                        //       style: GoogleFonts.poppins(
-                        //         textStyle: TextStyle(
-                        //           fontSize: screenHeight * 0.014,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: Colors.black,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ],
-                        // ),
                         TextButton(
                           onPressed: () {
                             Navigator.push(
