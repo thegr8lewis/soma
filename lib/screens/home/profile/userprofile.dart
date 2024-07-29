@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -7,10 +6,9 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/home/home.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:system_auth/trialpages/apply.dart';
 
 import '../../../config.dart';
+import '../../../trialpages/apply.dart';
 import '../../../trialpages/notification.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -162,6 +160,9 @@ class _ProfilePageState extends State<ProfilePage> {
       );
 
       if (response.statusCode == 200) {
+        // Clear all data from FlutterSecureStorage
+        await _storage.deleteAll();
+
         // Profile successfully deleted, navigate to home screen
         Navigator.pushReplacement(
           context,
@@ -330,76 +331,141 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showConfirmationBottomSheet(String actionType) {
+    final TextEditingController usernameController = TextEditingController();
+    bool isProcessing = false;
+    String errorMessage = '';
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          height: 200,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Confirm $actionType',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Confirm $actionType',
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Please enter your username to confirm:',
+                        style: GoogleFonts.poppins(),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: usernameController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Username',
+                        ),
+                      ),
+                      if (errorMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            errorMessage,
+                            style: GoogleFonts.poppins(color: Colors.red),
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.poppins(
+                                textStyle: const TextStyle(
+                                  color: Colors.blueAccent,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: isProcessing
+                                ? null
+                                : () async {
+                              if (usernameController.text == _name) {
+                                setState(() {
+                                  isProcessing = true;
+                                });
+                                if (actionType == 'delete') {
+                                  await _deleteProfile();
+                                } else if (actionType == 'logout') {
+                                  await _logOut();
+                                }
+                                setState(() {
+                                  isProcessing = false;
+                                });
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                      const LogIn()),
+                                );
+                              } else {
+                                setState(() {
+                                  errorMessage =
+                                  'Username does not match. Please try again.';
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: actionType == 'delete'
+                                  ? Colors.red
+                                  : Colors.green,
+                            ),
+                            child: isProcessing
+                                ? const SizedBox(
+                              width: 20.0, // specify the desired width
+                              height: 20.0, // specify the desired height
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                              ),
+                            )
+                                : Text(
+                              actionType == 'delete'
+                                  ? 'Delete'
+                                  : 'Log Out',
+                              style: GoogleFonts.poppins(
+                                textStyle: const TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                'Are you sure you want to $actionType your profile?',
-                style: GoogleFonts.poppins(),
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.poppins(
-                        textStyle: const TextStyle(
-                          color: Colors.blueAccent,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      if (actionType == 'delete') {
-                        _deleteProfile();
-                      } else if (actionType == 'logout') {
-                        _logOut();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: actionType == 'delete' ? Colors.red : Colors.green,
-                    ),
-                    child: Text(
-                      actionType == 'delete' ? 'Delete' : 'Log Out',
-                      style: GoogleFonts.poppins(
-                        textStyle: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+
 
   Future<void> _logOut() async {
     await _storage.delete(key: 'session_cookie');
@@ -445,7 +511,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               const SizedBox(height: 20),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Add horizontal padding
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
                     CircleAvatar(
@@ -468,7 +534,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 10), // Add some space between the CircleAvatar and the Text
+                    const SizedBox(width: 10),
                     Text(
                       _name ?? 'Loading...',
                       style: GoogleFonts.poppins(
@@ -502,7 +568,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.black,size: 20,),
+                  icon: const Icon(Icons.edit, color: Colors.black, size: 20),
                   onPressed: () {
                     _showUpdateBottomSheet();
                   },
@@ -527,7 +593,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.black,size: 20,),
+                  icon: const Icon(Icons.edit, color: Colors.black, size: 20),
                   onPressed: () {
                     _showUpdateBottomSheet();
                   },
@@ -543,10 +609,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,size: 20,),
-                onTap: (){
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
+                onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage()));
-                } ,
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.notifications, color: Colors.grey),
@@ -558,7 +624,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,size: 20,),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -582,7 +648,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,size: 20,),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
               ),
               ListTile(
                 leading: const Icon(Icons.feedback_rounded, color: Colors.grey),
@@ -594,7 +660,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,size: 20,),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),

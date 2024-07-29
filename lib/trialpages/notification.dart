@@ -11,12 +11,7 @@ class NotificationsPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SettingsPage(),
-                ),);
-              // Navigate to notifications settings
+
             },
           ),
         ],
