@@ -401,7 +401,7 @@ packages:
     source: hosted
     version: "4.0.0"
   loading_animation_widget:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: loading_animation_widget
       sha256: ee3659035528d19145d50cf0107632bf647e7306c88b6a32f35f3bed63f6d728

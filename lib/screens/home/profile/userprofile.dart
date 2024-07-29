@@ -418,9 +418,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 });
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                      const LogIn()),
+                                  MaterialPageRoute(builder: (context) => const LogIn()),
                                 );
                               } else {
                                 setState(() {
