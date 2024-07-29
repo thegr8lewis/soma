@@ -3,9 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:system_auth/config.dart'; // Make sure your BASE_URL is defined here
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:system_auth/screens/authenticate/grade.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:system_auth/screens/home/home.dart';
@@ -173,13 +171,13 @@ class _SignInState extends State<SignIn> {
                     ),
                     SizedBox(height: screenHeight * 0.03),
                     Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontSize: screenHeight * 0.025,
-                          fontWeight: FontWeight.w100,
-                          color: Colors.black,
-                        ),
-                      ),)),
-                      SizedBox(height: screenHeight * 0.01),
+                      textStyle: TextStyle(
+                        fontSize: screenHeight * 0.025,
+                        fontWeight: FontWeight.w100,
+                        color: Colors.black,
+                      ),
+                    ),)),
+                    SizedBox(height: screenHeight * 0.01),
                     Text(
                       'Enter the details to continue',
                       style: GoogleFonts.poppins(
@@ -341,18 +339,33 @@ class _SignInState extends State<SignIn> {
                           horizontal: screenWidth * 0.3,
                         ),
                       ),
-                      child: Text(
-                        'Sign up',
-                        style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
-                            fontSize: screenHeight * 0.02,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Visibility(
+                            visible: !_isLoading,
+                            child: Text(
+                              'Sign up',
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenHeight * 0.02,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                          Visibility(
+                            visible: _isLoading,
+                            child: LoadingAnimationWidget.staggeredDotsWave(
+                              color: Colors.white,
+                              size: screenHeight * 0.04,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.12),
+                    SizedBox(height: screenHeight * 0.09),
                     Column(
                       children: [
                         Row(
@@ -386,23 +399,10 @@ class _SignInState extends State<SignIn> {
                         ),
                       ],
                     ),
-                    SizedBox(height: screenHeight * 0.02),
                   ],
                 ),
               ),
             ),
-            if (_isLoading)
-              Container(
-                width: screenWidth,
-                height: screenHeight,
-                color: Colors.black.withOpacity(0.5),
-                child: Center(
-                  child: LoadingAnimationWidget.staggeredDotsWave(
-                    color: Colors.teal,
-                    size: screenHeight * 0.1,
-                  ),
-                ),
-              ),
           ],
         ),
       ),

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +12,7 @@ import 'package:system_auth/screens/home/profile/userprofile.dart';
 import 'package:system_auth/screens/home/topics.dart';
 import 'package:system_auth/trialpages/notification.dart';
 import '../screens/home/dailyquiz.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -54,11 +54,8 @@ class _PamelaState extends State<Homepage> {
         final data = jsonDecode(response.body);
         final username = data['username'] as String;
         setState(() {
-          _firstName =
-          username.split(' ')[0]; // Get the first name from the username
-          _initials = _firstName!
-              .substring(0, 2)
-              .toUpperCase(); // Get the first two letters of the first name
+          _firstName = username.split(' ')[0]; // Get the first name from the username
+          _initials = _firstName!.substring(0, 2).toUpperCase(); // Get the first two letters of the first name
         });
       } else {
         print('Failed to load user data. Status code: ${response.statusCode}');
@@ -85,29 +82,40 @@ class _PamelaState extends State<Homepage> {
 
       if (response.statusCode == 200) {
         List<dynamic> body = json.decode(response.body);
-        return body.map((dynamic item) => Subject.fromJson(item)).toList();
+        List<Subject> subjects = body.map((dynamic item) => Subject.fromJson(item)).toList();
+
+        // Fetch topic counts for each subject
+        for (var subject in subjects) {
+          final topicsResponse = await http.get(
+            Uri.parse('$BASE_URL/${subject.id}/topics'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Cookie': sessionCookie,
+            },
+          );
+
+          if (topicsResponse.statusCode == 200) {
+            List<dynamic> topicsBody = json.decode(topicsResponse.body);
+            subject.topicCount = topicsBody.length;
+          } else {
+            subject.topicCount = 0;
+          }
+        }
+
+        return subjects;
       } else if (response.statusCode == 401) {
         throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception(
-            'Failed to load subjects. Status code: ${response.statusCode}');
+        throw Exception('Failed to load subjects. Status code');
       }
     } on SocketException catch (_) {
-      SizedBox(
-        child: Lottie.asset(
-          'assets/network.json',
-          repeat: true,
-          width: 110,
-        ),
-      );
       throw Exception('No Internet connection. Please check your network.');
     } on HttpException catch (_) {
       throw Exception('Could not find the requested resource.');
     } catch (e) {
-      throw Exception('Error fetching subjects: $e');
+      throw Exception('Error fetching subjects:');
     }
   }
-
 
   void _onItemTapped(int index) {
     setState(() {
@@ -118,7 +126,7 @@ class _PamelaState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7F2),
+      backgroundColor:  const Color(0xFFFDF7F2),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
@@ -127,7 +135,6 @@ class _PamelaState extends State<Homepage> {
               firstName: _firstName,
               initials: _initials),
           const ProfilePage(),
-          // SettingsPage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -140,14 +147,10 @@ class _PamelaState extends State<Homepage> {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.settings),
-          //   label: 'Settings',
-          // ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.black,
+        selectedItemColor: const Color(0xD20F142F),
+        unselectedItemColor: Colors.black54,
         onTap: _onItemTapped,
       ),
     );
@@ -162,6 +165,11 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen(
       {Key? key, required this.subjectsFuture, this.firstName, this.initials})
       : super(key: key);
+
+  Future<int> _fetchPoints() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('score') ?? 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -212,9 +220,20 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 5),
-              _buildStatSection(),
+              FutureBuilder<int>(
+                future: _fetchPoints(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error loading points'));
+                  } else {
+                    return _buildStatSection(snapshot.data ?? 0);
+                  }
+                },
+              ),
               const SizedBox(height: 5),
-              _buildCourseSection(context), // Pass context here
+              _buildCourseSection(context),
               const SizedBox(height: 5),
               _buildSubjectsSection(context),
             ],
@@ -224,7 +243,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatSection() {
+  Widget _buildStatSection(int points) {
     return Column(
       children: [
         Container(
@@ -236,7 +255,7 @@ class HomeScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSingleStatCard('0', 'Points Earned', Colors.orange),
+              _buildSingleStatCard(points.toString(), 'Points Earned', Colors.orange),
             ],
           ),
         ),
@@ -246,15 +265,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildSingleStatCard(String value, String label, Color color) {
-    String imagePath = 'assets/star.gif'; // Default static image
+    String imagePath = 'assets/star.gif';
 
-    // Use different image paths based on the label or any other identifier
     if (label == 'Exp. Points') {
-      imagePath =
-      'assets/star.gif'; // Replace with your static image for Exp. Points
+      imagePath = 'assets/star.gif';
     } else if (label == 'Questions Done') {
-      imagePath =
-      'assets/soma1.png'; // Replace with your static image for Ranking
+      imagePath = 'assets/soma1.png';
     }
 
     return Row(
@@ -300,7 +316,7 @@ class HomeScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('Practice More'),
-        _buildDailyQuizCard(context), // Pass context here
+        _buildDailyQuizCard(context),
         const SizedBox(height: 5),
         _buildSectionTitle('Subjects'),
       ],
@@ -319,13 +335,13 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildDailyQuizCard(BuildContext context) {
-    double quizProgress = 0.1; // Replace with actual progress value
+    double quizProgress = 0.1;
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => DailyQuizScreen()), // Navigate to DailyQuizPage
+          MaterialPageRoute(builder: (context) => DailyQuizScreen()),
         );
       },
       child: Container(
@@ -379,9 +395,8 @@ class HomeScreen extends StatelessWidget {
       future: subjectsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: Lottie.asset('assets/loader.json', width: 50)); // Use a Lottie animation for loading
+          return Center(child: Lottie.asset('assets/loader.json', width: 50));
         } else if (snapshot.hasError) {
-          // Check if the error is a network error
           if (snapshot.error.toString().contains('NetworkError')) {
             return SizedBox(
               child: Lottie.asset(
@@ -402,7 +417,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
   Widget _buildSubjectsList(List<Subject> subjects, BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
@@ -417,7 +431,8 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => TopicsPage(
                   subjectId: subject.id,
-                  subjectName: subject.name ?? 'No name', subject_name: '',
+                  subjectName: subject.name ?? 'No name',
+                  subject_name: '',
                 ),
               ),
             );
@@ -439,15 +454,15 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // subtitle: Text(
-                //   subject.description ?? '0 questions done',
-                //   style: GoogleFonts.poppins(
-                //     textStyle: const TextStyle(
-                //       fontSize: 16,
-                //       color: Colors.black,
-                //     ),
-                //   ),
-                // ),
+                subtitle: Text(
+                  '${subject.topicCount} topics',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -462,8 +477,9 @@ class Subject {
   final String? description;
   final int id;
   final int grade;
+  int topicCount;
 
-  Subject({this.name, this.description, required this.id, required this.grade});
+  Subject({this.name, this.description, required this.id, required this.grade, this.topicCount = 0});
 
   factory Subject.fromJson(Map<String, dynamic> json) {
     return Subject(
@@ -471,6 +487,7 @@ class Subject {
       description: json['description'] as String?,
       id: json['id'],
       grade: json['grade'],
+      topicCount: json['topicCount'] ?? 0,
     );
   }
 }
@@ -479,6 +496,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Settings',
@@ -506,7 +524,6 @@ class SettingsPage extends StatelessWidget {
                   builder: (context) => const ProfilePage(),
                 ),
               );
-              // Navigate to Account settings
             },
           ),
           _buildListTile(
@@ -520,7 +537,6 @@ class SettingsPage extends StatelessWidget {
                   builder: (context) => NotificationsPage(),
                 ),
               );
-              // Navigate to Notifications settings
             },
           ),
           _buildListTile(
@@ -528,7 +544,6 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.card_giftcard,
             title: 'Coupons',
             onTap: () {
-              // Navigate to Coupons settings
             },
           ),
           _buildListTile(
@@ -590,7 +605,6 @@ class SettingsPage extends StatelessWidget {
                               builder: (context) => const LogIn(),
                             ),
                           );
-                          // Perform logout action
                         },
                       ),
                     ],
@@ -606,7 +620,6 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.bug_report,
             title: 'Report a bug',
             onTap: () {
-              // Navigate to Report a bug page
             },
           ),
           _buildListTile(
@@ -614,7 +627,6 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.feedback,
             title: 'Send feedback',
             onTap: () {
-              // Navigate to Send feedback page
             },
           ),
         ],

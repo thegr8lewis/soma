@@ -121,10 +121,10 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
         return body.map((dynamic item) => Subject.fromJson(item)).toList();
       } else {
         throw Exception(
-            'Failed to load subjects. Status code: ${response.statusCode}');
+            'Failed to load subjects. Status code:');
       }
     } catch (e) {
-      throw Exception('Error fetching subjects: $e');
+      throw Exception('Error fetching subjects:');
     }
   }
 
@@ -148,14 +148,7 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
         }
         return parsedTopics.cast<Map<String, dynamic>>();
       } else {
-        SizedBox(
-          child: Lottie.asset(
-            'assets/nosubjects.json',
-            repeat: true,
-            width: 110,
-          ),
-        );
-        throw Exception('Failed to load topics');
+        throw Exception('No topics available');
       }
     } catch (e) {
       throw e;
@@ -600,7 +593,7 @@ class CongratulationsPage extends StatelessWidget {
           children: [
             SizedBox(
               child: Lottie.asset(
-                'assets/welldone.json',
+                'assets/books.json',
                 repeat: true,
                 width: 200,
 

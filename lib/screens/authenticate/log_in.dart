@@ -5,10 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:system_auth/screens/authenticate/forgot_pass.dart';
 import 'package:system_auth/screens/authenticate/sign_in.dart';
-
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:system_auth/trialpages/apply.dart';
 import '../../config.dart';
+import '../../trialpages/apply.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({Key? key}) : super(key: key);
@@ -39,7 +38,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
   void _checkFields() {
     _isButtonEnabled.value =
         _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
-    _rememberMe;
   }
 
   @override
@@ -106,19 +104,19 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Extract the session cookie from the response headers if remember me is true
-        if (_rememberMe) {
-          final cookies = response.headers['set-cookie'];
-          if (cookies != null) {
-            _sessionCookie = cookies;
-            await _storage.write(key: 'session_cookie', value: cookies);
-          }
+        // Extract the session cookie from the response headers
+        final cookies = response.headers['set-cookie'];
+        if (cookies != null) {
+          _sessionCookie = cookies;
+          await _storage.write(key: 'session_cookie', value: cookies);
+        }
 
+        // Always save the session cookie and email, even if remember me is false
+        await _storage.write(key: 'email', value: email);
+        if (_rememberMe) {
           await _storage.write(key: 'remember_me', value: 'true');
-          await _storage.write(key: 'email', value: email);
         } else {
           await _storage.delete(key: 'remember_me');
-          await _storage.delete(key: 'email');
         }
 
         Navigator.pushReplacement(
@@ -156,7 +154,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -190,12 +187,12 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                     ),
                     SizedBox(height: screenHeight * 0.03),
                     Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontSize: screenHeight * 0.025,
-                          fontWeight: FontWeight.w100,
-                          color: Colors.black,
-                        ),
-                      ),)),
+                      textStyle: TextStyle(
+                        fontSize: screenHeight * 0.025,
+                        fontWeight: FontWeight.w100,
+                        color: Colors.black,
+                      ),
+                    ),)),
                     SizedBox(height: screenHeight * 0.01),
                     Text(
                       'Enter your email and Password',
@@ -214,7 +211,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                       style: TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.email, color: Colors.white),
-                        hintText: 'Email: brian@gmail.com',
+                        hintText: 'Email',
                         hintStyle: const TextStyle(color: Colors.white),
                         filled: true,
                         fillColor: Colors.grey[600],
@@ -266,36 +263,36 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            ValueListenableBuilder<bool>(
-                              valueListenable: _isButtonEnabled,
-                              builder: (context, value, child) {
-                                return Switch(
-                                  value: _rememberMe,
-                                  onChanged: value
-                                      ? (bool newValue) {
-                                    setState(() {
-                                      _rememberMe = newValue;
-                                    });
-                                  }
-                                      : null,
-                                  activeColor: Colors.green,
-                                );
-                              },
-                            ),
-                            Text(
-                              'Remember me',
-                              style: GoogleFonts.poppins(
-                                textStyle: TextStyle(
-                                  fontSize: screenHeight * 0.014,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   children: [
+                        //     ValueListenableBuilder<bool>(
+                        //       valueListenable: _isButtonEnabled,
+                        //       builder: (context, value, child) {
+                        //         return Switch(
+                        //           value: _rememberMe,
+                        //           onChanged: value
+                        //               ? (bool newValue) {
+                        //             setState(() {
+                        //               _rememberMe = newValue;
+                        //             });
+                        //           }
+                        //               : null,
+                        //           activeColor: Colors.green,
+                        //         );
+                        //       },
+                        //     ),
+                        //     Text(
+                        //       'Remember me',
+                        //       style: GoogleFonts.poppins(
+                        //         textStyle: TextStyle(
+                        //           fontSize: screenHeight * 0.014,
+                        //           fontWeight: FontWeight.bold,
+                        //           color: Colors.black,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                         TextButton(
                           onPressed: () {
                             Navigator.push(
@@ -316,7 +313,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                       ],
                     ),
                     SizedBox(height: screenHeight * 0.03),
-
                     ValueListenableBuilder<bool>(
                       valueListenable: _isButtonEnabled,
                       builder: (context, value, child) {
@@ -325,7 +321,9 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                           child: ElevatedButton(
                             onPressed: value
                                 ? () {
-                              _animationController.forward().then((_) {
+                              _animationController
+                                  .forward()
+                                  .then((_) {
                                 _animationController.reverse();
                                 _login();
                               });
@@ -342,15 +340,30 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                                 horizontal: screenWidth * 0.3,
                               ),
                             ),
-                            child: Text(
-                              'Login',
-                              style: GoogleFonts.poppins(
-                                textStyle: TextStyle(
-                                  fontSize: screenHeight * 0.025,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Visibility(
+                                  visible: !_isLoading,
+                                  child: Text(
+                                    'Login',
+                                    style: GoogleFonts.poppins(
+                                      textStyle: TextStyle(
+                                        fontSize: screenHeight * 0.025,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                Visibility(
+                                  visible: _isLoading,
+                                  child: LoadingAnimationWidget.staggeredDotsWave(
+                                    color: Colors.white,
+                                    size: screenHeight * 0.04,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -397,18 +410,6 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                 ),
               ),
             ),
-            if (_isLoading)
-              Container(
-                width: screenWidth,
-                height: screenHeight,
-                color: Colors.black.withOpacity(0.5),
-                child: Center(
-                  child: LoadingAnimationWidget.staggeredDotsWave(
-                    color: Colors.teal,
-                    size: screenHeight * 0.1,
-                  ),
-                ),
-              ),
           ],
         ),
       ),

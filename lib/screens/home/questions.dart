@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
@@ -118,7 +117,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
     }
   }
 
-
   Future<void> speak(String text) async {
     final url = Uri.parse('https://api.voicerss.org/');
     final response = await http.post(
@@ -153,7 +151,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
     bool isCorrect = selectedChoice == correctAnswer;
 
     if (isCorrect) {
-      score++;
+      score += 10; // Award 10 points for each correct answer
       playSound(correctAnswerSound);
     } else {
       playSound(wrongAnswerSound);
