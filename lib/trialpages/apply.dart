@@ -27,12 +27,14 @@ class _PamelaState extends State<Homepage> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   String? _firstName;
   String? _initials;
+  final ValueNotifier<int> _pointsNotifier = ValueNotifier<int>(0);
 
   @override
   void initState() {
     super.initState();
     _subjectsFuture = _fetchSubjects();
     _fetchUserData();
+    _fetchPoints();
   }
 
   Future<void> _fetchUserData() async {
@@ -63,6 +65,19 @@ class _PamelaState extends State<Homepage> {
     } catch (e) {
       print('Error fetching user data: $e');
     }
+  }
+
+  Future<void> _fetchPoints() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _pointsNotifier.value = prefs.getInt('score') ?? 0;
+  }
+
+  Future<void> _refreshData() async {
+    // Fetch the latest points and subjects
+    await _fetchPoints();
+    setState(() {
+      _subjectsFuture = _fetchSubjects();
+    });
   }
 
   Future<List<Subject>> _fetchSubjects() async {
@@ -131,9 +146,13 @@ class _PamelaState extends State<Homepage> {
         index: _selectedIndex,
         children: [
           HomeScreen(
-              subjectsFuture: _subjectsFuture,
-              firstName: _firstName,
-              initials: _initials),
+            subjectsFuture: _subjectsFuture,
+            firstName: _firstName,
+            initials: _initials,
+            pointsNotifier: _pointsNotifier,
+            onPointsChanged: _fetchPoints, // Callback to fetch points when they change
+            onRefresh: _refreshData, // Callback to refresh data
+          ),
           const ProfilePage(),
         ],
       ),
@@ -161,82 +180,84 @@ class HomeScreen extends StatelessWidget {
   final Future<List<Subject>> subjectsFuture;
   final String? firstName;
   final String? initials;
+  final ValueNotifier<int> pointsNotifier;
+  final VoidCallback onPointsChanged;
+  final Future<void> Function() onRefresh;
 
-  const HomeScreen(
-      {Key? key, required this.subjectsFuture, this.firstName, this.initials})
-      : super(key: key);
-
-  Future<int> _fetchPoints() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('score') ?? 0;
-  }
+  const HomeScreen({
+    Key? key,
+    required this.subjectsFuture,
+    this.firstName,
+    this.initials,
+    required this.pointsNotifier,
+    required this.onPointsChanged,
+    required this.onRefresh,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '👋 Hi ${firstName ?? 'There'},',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(), // Ensure the scroll physics allows pull-to-refresh
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '👋 Hi ${firstName ?? 'There'},',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        'Great to see you again!',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.brown,
+                        Text(
+                          'Great to see you again!',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.brown,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    child: SizedBox(
-                      child: Lottie.asset(
-                        'assets/books.json',
-                        repeat: true,
-                        width: 110,
+                      ],
+                    ),
+                    GestureDetector(
+                      child: SizedBox(
+                        child: Lottie.asset(
+                          'assets/books.json',
+                          repeat: true,
+                          width: 110,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              FutureBuilder<int>(
-                future: _fetchPoints(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error loading points'));
-                  } else {
-                    return _buildStatSection(snapshot.data ?? 0);
-                  }
-                },
-              ),
-              const SizedBox(height: 5),
-              _buildCourseSection(context),
-              const SizedBox(height: 5),
-              _buildSubjectsSection(context),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 5),
+                ValueListenableBuilder<int>(
+                  valueListenable: pointsNotifier,
+                  builder: (context, points, child) {
+                    return _buildStatSection(points);
+                  },
+                ),
+                const SizedBox(height: 5),
+                _buildCourseSection(context),
+                const SizedBox(height: 5),
+                _buildSubjectsSection(context),
+              ],
+            ),
           ),
         ),
       ),
@@ -342,7 +363,7 @@ class HomeScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => DailyQuizScreen()),
-        );
+        ).then((_) => onPointsChanged()); // Callback to update points after returning
       },
       child: Container(
         padding: const EdgeInsets.all(15.0),
@@ -435,7 +456,7 @@ class HomeScreen extends StatelessWidget {
                   subject_name: '',
                 ),
               ),
-            );
+            ).then((_) => onPointsChanged()); // Callback to update points after returning
           },
           child: Card(
             elevation: 4,
@@ -491,5 +512,3 @@ class Subject {
     );
   }
 }
-
-
