@@ -99,8 +99,8 @@ class _PamelaState extends State<Homepage> {
         List<dynamic> body = json.decode(response.body);
         List<Subject> subjects = body.map((dynamic item) => Subject.fromJson(item)).toList();
 
-        // Fetch topic counts for each subject
-        for (var subject in subjects) {
+        // Fetch topic counts for each subject in parallel
+        await Future.wait(subjects.map((subject) async {
           final topicsResponse = await http.get(
             Uri.parse('$BASE_URL/${subject.id}/topics'),
             headers: {
@@ -115,20 +115,29 @@ class _PamelaState extends State<Homepage> {
           } else {
             subject.topicCount = 0;
           }
-        }
+        }));
 
         return subjects;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception('Failed to load subjects. Status code');
+        handleHttpError(response.statusCode);
       }
     } on SocketException catch (_) {
       throw Exception('No Internet connection. Please check your network.');
     } on HttpException catch (_) {
       throw Exception('Could not find the requested resource.');
     } catch (e) {
-      throw Exception('Error fetching subjects:');
+      throw Exception('Error fetching subjects: $e');
+    }
+
+    // Return an empty list if an error occurs
+    return [];
+  }
+
+  void handleHttpError(int statusCode) {
+    if (statusCode == 401) {
+      throw Exception('Unauthorized request. Please check your credentials.');
+    } else {
+      throw Exception('Failed to load subjects. Status code: $statusCode');
     }
   }
 
@@ -141,7 +150,7 @@ class _PamelaState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  const Color(0xFFFDF7F2),
+      backgroundColor: const Color(0xFFFDF7F2),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
@@ -237,7 +246,7 @@ class HomeScreen extends StatelessWidget {
                     GestureDetector(
                       child: SizedBox(
                         child: Lottie.asset(
-                          'assets/books.json',
+                          'assets/panda.json',
                           repeat: true,
                           width: 110,
                         ),
@@ -245,7 +254,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
                 ValueListenableBuilder<int>(
                   valueListenable: pointsNotifier,
                   builder: (context, points, child) {
@@ -469,7 +477,7 @@ class HomeScreen extends StatelessWidget {
                   subject.name ?? 'No name',
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      fontSize:18,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.brown,
                     ),

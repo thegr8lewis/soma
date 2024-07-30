@@ -24,6 +24,7 @@ class TopicsPage extends StatefulWidget {
 class _TopicsPageState extends State<TopicsPage> {
   List<Map<String, dynamic>> topics = [];
   bool isLoading = true;
+  String errorMessage = '';
 
   @override
   void initState() {
@@ -42,55 +43,49 @@ class _TopicsPageState extends State<TopicsPage> {
 
       if (response.statusCode == 200) {
         final List<dynamic> parsedTopics = json.decode(response.body);
-        for (var topic in parsedTopics) {
+        final List<Future<void>> fetches = parsedTopics.map((topic) async {
           final totalQuestions = await fetchTotalQuestions(topic['id']);
           topic['total_questions'] = totalQuestions;
-        }
+        }).toList();
+
+        await Future.wait(fetches);
+
         setState(() {
           topics = parsedTopics.cast<Map<String, dynamic>>();
           isLoading = false;
         });
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception('Failed to load topics. Status code: ${response.statusCode}');
+        handleHttpError(response.statusCode);
       }
-    } on SocketException catch (_) {
-      throw Exception('No Internet connection. Please check your network.');
-    } on HttpException catch (_) {
-      throw Exception('Could not find the requested resource.');
-    } on FormatException catch (_) {
-      throw Exception('Bad response format. Unable to parse the data.');
     } catch (e) {
-      throw Exception('Error fetching topics: ');
+      setState(() {
+        errorMessage = e.toString();
+        isLoading = false;
+      });
     }
   }
 
   Future<int> fetchTotalQuestions(int topicId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$BASE_URL/questions/${widget.subjectName}/$topicId'),
-      );
+    final response = await http.get(
+      Uri.parse('$BASE_URL/questions/${widget.subjectName}/$topicId'),
+    );
 
-      if (response.statusCode == 200) {
-        final questions = json.decode(response.body) as List<dynamic>;
-        return questions.length;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized request. Please check your credentials.');
-      } else {
-        throw Exception('Failed to load questions. Status code: ${response.statusCode}');
-      }
-    } on SocketException catch (_) {
-      throw Exception('No Internet connection. Please check your network.');
-    } on HttpException catch (_) {
-      throw Exception('Could not find the requested resource.');
-    } on FormatException catch (_) {
-      throw Exception('Bad response format. Unable to parse the data.');
-    } catch (e) {
-      throw Exception('Error fetching total questions: ');
+    if (response.statusCode == 200) {
+      final questions = json.decode(response.body) as List<dynamic>;
+      return questions.length;
+    } else {
+      handleHttpError(response.statusCode);
+      return 0; // Return 0 in case of an error
     }
   }
 
+  void handleHttpError(int statusCode) {
+    if (statusCode == 401) {
+      throw Exception('Unauthorized request. Please check your credentials.');
+    } else {
+      throw Exception('Failed to load data. Status code: $statusCode');
+    }
+  }
 
   Widget _buildSkeletonLoader() {
     return ListView.builder(
@@ -156,64 +151,66 @@ class _TopicsPageState extends State<TopicsPage> {
       ),
       body: isLoading
           ? _buildSkeletonLoader()
+          : errorMessage.isNotEmpty
+          ? Center(child: Text(errorMessage))
           : ListView.builder(
-              itemCount: topics.length,
-              itemBuilder: (context, index) {
-                final topic = topics[index];
-                return Center( // Center the container within the ListView
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.9, // Control the width here
-                    margin: const EdgeInsets.symmetric(vertical: 8), // Adjust vertical margin
-                    padding: const EdgeInsets.all(16), // Adjust padding
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        topic['topic_name'] ?? 'No name', // Use null-aware operator
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown,
-                          ),
-                        ),
-                      ),
-                      trailing: Text(
-                        '${topic['total_questions'] ?? 0} Q', // Display total questions
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuestionsPage(
-                              topicId: topic['id'] ?? 0, // Example default value
-                              topicName: topic['topic_name'] ?? 'Unknown', // Example default value
-                              subjectName: widget.subjectName,
-                            ),
-                          ),
-                        );
-                      },
+        itemCount: topics.length,
+        itemBuilder: (context, index) {
+          final topic = topics[index];
+          return Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ListTile(
+                title: Text(
+                  topic['topic_name'] ?? 'No name',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown,
                     ),
                   ),
-                );
-              },
+                ),
+                trailing: Text(
+                  '${topic['total_questions'] ?? 0} Q',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuestionsPage(
+                        topicId: topic['id'] ?? 0,
+                        topicName: topic['topic_name'] ?? 'Unknown',
+                        subjectName: widget.subjectName,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
+          );
+        },
+      ),
     );
   }
 }
