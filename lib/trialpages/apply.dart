@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:skeleton_text/skeleton_text.dart';
 import 'dart:convert';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:system_auth/config.dart';
@@ -28,6 +29,8 @@ class _PamelaState extends State<Homepage> {
   String? _firstName;
   String? _initials;
   final ValueNotifier<int> _pointsNotifier = ValueNotifier<int>(0);
+  bool isLoading = true;
+  String errorMessage = '';
 
   @override
   void initState() {
@@ -69,7 +72,7 @@ class _PamelaState extends State<Homepage> {
 
   Future<void> _fetchPoints() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _pointsNotifier.value = prefs.getInt('score') ?? 0;
+    _pointsNotifier.value = prefs.getInt('total_score') ?? 0;
   }
 
   Future<void> _refreshData() async {
@@ -117,6 +120,9 @@ class _PamelaState extends State<Homepage> {
           }
         }));
 
+        setState(() {
+          isLoading = false;
+        });
         return subjects;
       } else {
         handleHttpError(response.statusCode);
@@ -134,6 +140,10 @@ class _PamelaState extends State<Homepage> {
   }
 
   void handleHttpError(int statusCode) {
+    setState(() {
+      isLoading = false;
+      errorMessage = 'Failed to load subjects. Status code: $statusCode';
+    });
     if (statusCode == 401) {
       throw Exception('Unauthorized request. Please check your credentials.');
     } else {
@@ -161,6 +171,8 @@ class _PamelaState extends State<Homepage> {
             pointsNotifier: _pointsNotifier,
             onPointsChanged: _fetchPoints, // Callback to fetch points when they change
             onRefresh: _refreshData, // Callback to refresh data
+            isLoading: isLoading,
+            errorMessage: errorMessage,
           ),
           const ProfilePage(),
         ],
@@ -192,6 +204,8 @@ class HomeScreen extends StatelessWidget {
   final ValueNotifier<int> pointsNotifier;
   final VoidCallback onPointsChanged;
   final Future<void> Function() onRefresh;
+  final bool isLoading;
+  final String errorMessage;
 
   const HomeScreen({
     Key? key,
@@ -201,7 +215,57 @@ class HomeScreen extends StatelessWidget {
     required this.pointsNotifier,
     required this.onPointsChanged,
     required this.onRefresh,
+    required this.isLoading,
+    required this.errorMessage,
   }) : super(key: key);
+
+  Widget _buildSkeletonLoader() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: 8, // Number of skeleton cards to display
+      itemBuilder: (context, index) {
+        return Center(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonAnimation(
+                  child: Container(
+                    height: 20,
+                    width: MediaQuery.of(context).size.width * 0.6,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SkeletonAnimation(
+                  child: Container(
+                    height: 20,
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -423,24 +487,23 @@ class HomeScreen extends StatelessWidget {
     return FutureBuilder<List<Subject>>(
       future: subjectsFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: Lottie.asset('assets/loader.json', width: 50));
+        if (isLoading) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height - 200, // Adjust the height as needed
+            child: _buildSkeletonLoader(),
+          );
         } else if (snapshot.hasError) {
-          if (snapshot.error.toString().contains('NetworkError')) {
-            return SizedBox(
-              child: Lottie.asset(
-                'assets/network.json',
-                repeat: true,
-                width: 110,
-              ),
-            );
-          } else {
-            return const Center(child: Text('Error fetching subjects:'));
-          }
+          return Center(child: Text(errorMessage));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No subjects available.'));
         } else {
-          return _buildSubjectsList(snapshot.data!, context);
+          return ListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _buildSubjectsList(snapshot.data!, context),
+            ],
+          );
         }
       },
     );

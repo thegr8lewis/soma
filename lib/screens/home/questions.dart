@@ -48,17 +48,17 @@ class _QuestionsPageState extends State<QuestionsPage> {
   Future<void> loadProgress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      currentQuestionIndex = prefs.getInt('currentQuestionIndex') ?? 0;
-      score = prefs.getInt('score') ?? 0;
-      questionsAttempted = prefs.getInt('questionsAttempted') ?? 0;
+      currentQuestionIndex = prefs.getInt('currentQuestionIndex_${widget.topicId}') ?? 0;
+      score = prefs.getInt('score_${widget.topicId}') ?? 0;
+      questionsAttempted = prefs.getInt('questionsAttempted_${widget.topicId}') ?? 0;
     });
   }
 
   Future<void> saveProgress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('currentQuestionIndex', currentQuestionIndex);
-    await prefs.setInt('score', score);
-    await prefs.setInt('questionsAttempted', questionsAttempted);
+    await prefs.setInt('currentQuestionIndex_${widget.topicId}', currentQuestionIndex);
+    await prefs.setInt('score_${widget.topicId}', score);
+    await prefs.setInt('questionsAttempted_${widget.topicId}', questionsAttempted);
   }
 
   Future<void> fetchQuestions() async {
@@ -88,13 +88,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
         });
       }
     } on SocketException catch (_) {
-      SizedBox(
-        child: Lottie.asset(
-          'assets/network.json',
-          repeat: true,
-          width: 110,
-        ),
-      );
       setState(() {
         errorMessage = 'No Internet connection. Please check your network.';
         isLoading = false;
@@ -144,7 +137,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
     await audioPlayer.play(AssetSource(soundPath));
   }
 
-  void checkAnswer() {
+  void checkAnswer() async {
     if (selectedChoice == null) return;
 
     String correctAnswer = questions[currentQuestionIndex]['correct_answer'];
@@ -153,6 +146,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
     if (isCorrect) {
       score += 10; // Award 10 points for each correct answer
       playSound(correctAnswerSound);
+      await saveTotalPoints(10); // Save 10 points to total points
     } else {
       playSound(wrongAnswerSound);
     }
@@ -223,7 +217,8 @@ class _QuestionsPageState extends State<QuestionsPage> {
                       MaterialPageRoute(
                         builder: (context) => CongratulationsPage(
                           score: score,
-                          totalQuestions: questionsAttempted,
+                          totalQuestions: questions.length,
+                          questionsAttempted: questionsAttempted,
                         ),
                       ),
                     );
@@ -252,6 +247,13 @@ class _QuestionsPageState extends State<QuestionsPage> {
     );
   }
 
+  Future<void> saveTotalPoints(int points) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int totalScore = prefs.getInt('total_score') ?? 0;
+    totalScore += points;
+    await prefs.setInt('total_score', totalScore);
+  }
+
   void skipQuestion() {
     setState(() {
       currentQuestionIndex++;
@@ -262,7 +264,8 @@ class _QuestionsPageState extends State<QuestionsPage> {
           MaterialPageRoute(
             builder: (context) => CongratulationsPage(
               score: score,
-              totalQuestions: questionsAttempted,
+              totalQuestions: questions.length,
+              questionsAttempted: questionsAttempted,
             ),
           ),
         );
@@ -307,7 +310,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
                           children: [
                             Expanded(
                               child: LinearProgressIndicator(
-                                value: questionsAttempted / questions.length,
+                                value: questionsAttempted / (questions.isNotEmpty ? questions.length : 1),
                                 backgroundColor: Colors.grey[300],
                                 valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
                               ),
@@ -338,7 +341,8 @@ class _QuestionsPageState extends State<QuestionsPage> {
                                   MaterialPageRoute(
                                     builder: (context) => CongratulationsPage(
                                       score: score,
-                                      totalQuestions: questionsAttempted,
+                                      totalQuestions: questions.length,
+                                      questionsAttempted: questionsAttempted,
                                     ),
                                   ),
                                 );

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-
-import '../../trialpages/apply.dart';
+import 'package:lottie/lottie.dart';
 
 class CongratulationsPage extends StatelessWidget {
   final int score;
   final int totalQuestions;
+  final int questionsAttempted;
 
-  CongratulationsPage({required this.score, required this.totalQuestions});
+  CongratulationsPage({
+    required this.score,
+    required this.totalQuestions,
+    required this.questionsAttempted,
+  });
 
   @override
   Widget build(BuildContext context) {
-    double percentage = (score / totalQuestions) * 100;
-
     return Scaffold(
       body: Center(
         child: Padding(
@@ -19,67 +21,61 @@ class CongratulationsPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    Icons.emoji_events,
-                    color: Colors.orange[300],
-                    size: 200,
-                  ),
-                  const Positioned(
-                    bottom: 40,
-                    child: Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 50,
-                    ),
-                  ),
-                  const Positioned(
-                    bottom: 0,
-                    child: Icon(
-                      Icons.emoji_events,
-                      color: Colors.blue,
-                      size: 50,
-                    ),
-                  ),
-                ],
+               SizedBox(
+                child: Lottie.asset(
+                  'assets/congratulations.json',
+                  repeat: true,
+                  width: 180,
+                ),
               ),
               const SizedBox(height: 20),
               const Text(
-                'Congratulations',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                'Congratulations!',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
               ),
-              const SizedBox(height: 10),
-              const Text(
-                'You did a great job in the test!',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+              const SizedBox(height: 20),
+              Text(
+                'You scored ${(score * 10)/questionsAttempted} %',
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: Colors.black,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
-                'Your Score: ${percentage.toStringAsFixed(0)}%',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                'You attempted $questionsAttempted out of $totalQuestions questions.',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black54,
+                ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Homepage()),
-                  );
+                  Navigator.popUntil(context, (route) => route.isFirst);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 64),
+                  foregroundColor: Colors.white, backgroundColor: Colors.blue, // Text color
+                  shadowColor: Colors.black, // Shadow color
+                  elevation: 5, // Elevation of the button
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10), // Rounded corners
                   ),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding inside the button
                 ),
                 child: const Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  'Back to Home',
+                  style: TextStyle(
+                    fontSize: 18, // Font size of the text
+                    fontWeight: FontWeight.bold, // Font weight of the text
+                  ),
                 ),
               ),
+
             ],
           ),
         ),
