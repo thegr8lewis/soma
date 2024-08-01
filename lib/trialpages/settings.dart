@@ -474,7 +474,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,size: 20,),
                 onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
                 } ,
               ),
               ListTile(

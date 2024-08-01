@@ -1,139 +1,74 @@
 import 'package:flutter/material.dart';
-import 'package:system_auth/trialpages/apply.dart';
+import '../screens/home/activity_tracker.dart';
 
-class NotificationsPage extends StatelessWidget {
+class NotificationPage extends StatefulWidget {
+  @override
+  _NotificationPageState createState() => _NotificationPageState();
+}
+
+class _NotificationPageState extends State<NotificationPage> {
+  final ActivityTracker _activityTracker = ActivityTracker();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _activityTracker.startTracking();
+    _activityTracker.addListener(_showSnackBar);
+  }
+
+  @override
+  void dispose() {
+    _activityTracker.removeListener(_showSnackBar);
+    super.dispose();
+  }
+
+  void _showSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Notification received!'),
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'DISMISS',
+          onPressed: () {},
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Notifications'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-
-            },
-          ),
-        ],
+        title: const Text('E-Learning Platform'),
+        backgroundColor: Colors.white,
       ),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Text(
-            'You have 1 notifications today.',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-          SizedBox(height: 10),
-          _buildSectionTitle('Today'),
-          _buildNotificationItem(
-            context,
-            avatarUrl: 'https://picsum.photos/200',
-            username: 'SomaApp',
-            message: 'Welcomes you to this amazing platform',
-            timeAgo: '2 h ago',
-            icon: Icons.favorite,
-          ),
-          // _buildNotificationItem(
-          //   context,
-          //   avatarUrl: 'https://picsum.photos/100',
-          //   username: 'Arslan Ali',
-          //   message: 'Liked your DailyUI 044 - Food menu',
-          //   timeAgo: '6 h ago',
-          //   icon: Icons.favorite,
-          // ),
-          // _buildNotificationItem(
-          //   context,
-          //   avatarUrl: 'https://via.placeholder.com/150',
-          //   username: 'Johny Vino',
-          //   message: 'Mentioned you in a comment',
-          //   timeAgo: '8 h ago',
-          //   icon: Icons.comment,
-          // ),
-          _buildSectionTitle('This Week'),
-          // _buildNotificationItem(
-          //   context,
-          //   avatarUrl: 'https://via.placeholder.com/150',
-          //   username: 'Brice Seraphin',
-          //   message: 'Liked your DailyUI 044 - Food menu',
-          //   timeAgo: '6 June',
-          //   icon: Icons.favorite,
-          // ),
-          // _buildNotificationItem(
-          //   context,
-          //   avatarUrl: 'https://via.placeholder.com/150',
-          //   username: 'Best UI Design',
-          //   message: 'Started Following your work',
-          //   timeAgo: '5 June',
-          //   icon: Icons.person_add,
-          // ),
-          // _buildNotificationItem(
-          //   context,
-          //   avatarUrl: 'https://via.placeholder.com/150',
-          //   username: 'Kumar MA',
-          //   message: 'Mentioned you in a comment',
-          //   timeAgo: '5 June',
-          //   icon: Icons.comment,
-          // ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey[600],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationItem(BuildContext context,
-      {required String avatarUrl,
-      required String username,
-      required String message,
-      required String timeAgo,
-      required IconData icon}) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(avatarUrl),
-      ),
-      title: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: username,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+      body: GestureDetector(
+        onTap: _activityTracker.userActivity,
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.school,
+                size: 100,
+                color: Colors.blueAccent,
               ),
-            ),
-            TextSpan(
-              text: ' $message',
-              style: TextStyle(color: Colors.black),
-            ),
-          ],
+              SizedBox(height: 20),
+              Text(
+                'Tap to simulate activity',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Stay active to receive notifications!',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       ),
-      subtitle: Text(timeAgo),
-      trailing: Icon(icon, color: Colors.grey),
-      onTap: () {
-        // Handle notification item tap
-      },
     );
   }
 }
-
-// void main() {
-//   runApp(MaterialApp(
-//     home: NotificationsPage(),
-//   ));
-// }

@@ -29,7 +29,12 @@ dependencies:
   audioplayers: ^5.2.1
   loading_animation_widget: ^1.1.0
   connectivity_plus: ^2.3.1
-  font_awesome_flutter: ^10.1.0 # check for the latest version
+  font_awesome_flutter: ^10.1.0
+  image_picker: ^1.1.2
+  flutter_email_sender: ^6.0.3
+  flutter_local_notifications: ^17.2.1+2
+  permission_handler: ^11.3.1
+
 
 dev_dependencies:
   flutter_test:

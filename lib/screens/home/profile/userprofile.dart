@@ -10,6 +10,7 @@ import 'package:system_auth/screens/home/home.dart';
 import '../../../config.dart';
 import '../../../trialpages/apply.dart';
 import '../../../trialpages/notification.dart';
+import '../sendfeedback.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -609,7 +610,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
                 },
               ),
               ListTile(
@@ -647,6 +648,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendFeedbackPage()));
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.feedback_rounded, color: Colors.grey),
@@ -659,6 +663,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendFeedbackPage()));
+                },
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
