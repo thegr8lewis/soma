@@ -1,34 +1,28 @@
-// lib/services/notification_service.dart
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/material.dart';
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  static Future<void> initialize() async {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings();
-    final InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-
-    await _notificationsPlugin.initialize(initializationSettings);
-  }
-
-  static Future<void> showNotification(int id, String title, String body) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'main_channel', 'Main Channel',
-      channelDescription: 'Main notification channel',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: false,
-    );
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics,
-    );
-
-    await _notificationsPlugin.show(id, title, body, platformChannelSpecifics);
+  static void showNotification(int id, String title, String message) {
+    final context = navigatorKey.currentState?.overlay?.context;
+    if (context != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text('DISMISS'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 }

@@ -11,7 +11,6 @@ import 'package:system_auth/config.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/home/profile/userprofile.dart';
 import 'package:system_auth/screens/home/topics.dart';
-import 'package:system_auth/trialpages/notification.dart';
 import '../screens/home/dailyquiz.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

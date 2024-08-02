@@ -9,8 +9,9 @@ import 'package:system_auth/screens/home/home.dart';
 
 import '../../../config.dart';
 import '../../../trialpages/apply.dart';
-import '../../../trialpages/notification.dart';
-import '../sendfeedback.dart';
+import '../../../trialpages/notification pge.dart';
+import '../../../trialpages/notification pge.dart';
+import '../sendemail.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -477,9 +478,9 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7F2),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFDF7F2),
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: Colors.black,
@@ -500,6 +501,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         centerTitle: true,
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(0.0),
         child: _isLoading
@@ -609,9 +611,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
-                },
+                // onTap: () {
+                //   Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage));
+                // },
               ),
               ListTile(
                 leading: const Icon(Icons.notifications, color: Colors.grey),
@@ -649,7 +651,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendFeedbackPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendEmailFromFlutterApp()));
                 },
               ),
               ListTile(
@@ -664,7 +666,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendFeedbackPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendEmailFromFlutterApp()));
                 },
               ),
               Padding(

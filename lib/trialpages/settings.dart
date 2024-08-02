@@ -9,7 +9,6 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:system_auth/trialpages/apply.dart';
 
 import '../../../config.dart';
-import '../../../trialpages/notification.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -473,9 +472,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black,size: 20,),
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
-                } ,
+                // onTap: (){
+                //   Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
+                // } ,
               ),
               ListTile(
                 leading: const Icon(Icons.notifications, color: Colors.grey),
