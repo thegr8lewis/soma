@@ -72,10 +72,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
           questions = json.decode(response.body) as List<dynamic>;
           isLoading = false;
         });
-        // Speak the first question
-        if (currentQuestionIndex < questions.length) {
-          speak(questions[currentQuestionIndex]['question']);
-        }
       } else if (response.statusCode == 401) {
         setState(() {
           errorMessage = 'Unauthorized request. Please check your credentials.';
@@ -405,6 +401,8 @@ class _QuestionsPageState extends State<QuestionsPage> {
                   setState(() {
                     selectedChoice = option;
                   });
+                  // Speak the selected choice
+                  speak(option);
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
