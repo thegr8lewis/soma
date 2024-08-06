@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
     await flutterLocalNotificationsPlugin.show(
       0,
       'Soma App',
-      'Welcome to Soma App!',
+      'Hello,welcome to Soma App!',
       platformChannelSpecifics,
       payload: 'welcome_payload',
     );

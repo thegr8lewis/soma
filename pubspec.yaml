@@ -30,6 +30,9 @@ dependencies:
   loading_animation_widget: ^1.1.0
   connectivity_plus: ^2.3.1
   flutter_local_notifications: ^17.2.1+2
+  image_picker: ^1.1.2
+  flutter_email_sender: ^6.0.3
+  font_awesome_flutter: ^10.7.0
 
 dev_dependencies:
   flutter_test:

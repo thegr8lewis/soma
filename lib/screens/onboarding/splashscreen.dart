@@ -52,12 +52,20 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: 30),
             Center(
               child: Text(
-                'Access Education under the dollar',
-                style: GoogleFonts.poppins(
+                ' S O M A  A P P ',
+                style: GoogleFonts.pacifico(
                   textStyle: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.normal,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black,
+                    letterSpacing: 2,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 5,
+                        color: Colors.yellow.withOpacity(0.5),
+                        offset: Offset(2, 2),
+                      ),
+                    ],
                   ),
                 ),
                 textAlign: TextAlign.center,

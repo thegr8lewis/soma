@@ -9,7 +9,9 @@ import 'package:system_auth/screens/home/home.dart';
 
 import '../../../config.dart';
 import '../../../trialpages/apply.dart';
-import '../../../trialpages/notification.dart';
+import '../../../trialpages/notification pge.dart';
+import '../../../trialpages/notification pge.dart';
+import '../sendemail.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -418,9 +420,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 });
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                      const LogIn()),
+                                  MaterialPageRoute(builder: (context) => const LogIn()),
                                 );
                               } else {
                                 setState(() {
@@ -478,9 +478,9 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7F2),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFDF7F2),
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: Colors.black,
@@ -501,6 +501,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         centerTitle: true,
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(0.0),
         child: _isLoading
@@ -610,9 +611,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsPage()));
-                },
+                // onTap: () {
+                //   Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage));
+                // },
               ),
               ListTile(
                 leading: const Icon(Icons.notifications, color: Colors.grey),
@@ -649,6 +650,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendEmailFromFlutterApp()));
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.feedback_rounded, color: Colors.grey),
@@ -661,6 +665,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendEmailFromFlutterApp()));
+                },
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),

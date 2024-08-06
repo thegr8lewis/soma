@@ -4,13 +4,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:skeleton_text/skeleton_text.dart';
 import 'dart:convert';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:system_auth/config.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/home/profile/userprofile.dart';
 import 'package:system_auth/screens/home/topics.dart';
-import 'package:system_auth/trialpages/notification.dart';
 import '../screens/home/dailyquiz.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,12 +27,16 @@ class _PamelaState extends State<Homepage> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   String? _firstName;
   String? _initials;
+  final ValueNotifier<int> _pointsNotifier = ValueNotifier<int>(0);
+  bool isLoading = true;
+  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
     _subjectsFuture = _fetchSubjects();
     _fetchUserData();
+    _fetchPoints();
   }
 
   Future<void> _fetchUserData() async {
@@ -65,6 +69,19 @@ class _PamelaState extends State<Homepage> {
     }
   }
 
+  Future<void> _fetchPoints() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _pointsNotifier.value = prefs.getInt('total_score') ?? 0;
+  }
+
+  Future<void> _refreshData() async {
+    // Fetch the latest points and subjects
+    await _fetchPoints();
+    setState(() {
+      _subjectsFuture = _fetchSubjects();
+    });
+  }
+
   Future<List<Subject>> _fetchSubjects() async {
     try {
       final sessionCookie = await _storage.read(key: 'session_cookie');
@@ -84,8 +101,8 @@ class _PamelaState extends State<Homepage> {
         List<dynamic> body = json.decode(response.body);
         List<Subject> subjects = body.map((dynamic item) => Subject.fromJson(item)).toList();
 
-        // Fetch topic counts for each subject
-        for (var subject in subjects) {
+        // Fetch topic counts for each subject in parallel
+        await Future.wait(subjects.map((subject) async {
           final topicsResponse = await http.get(
             Uri.parse('$BASE_URL/${subject.id}/topics'),
             headers: {
@@ -100,20 +117,36 @@ class _PamelaState extends State<Homepage> {
           } else {
             subject.topicCount = 0;
           }
-        }
+        }));
 
+        setState(() {
+          isLoading = false;
+        });
         return subjects;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception('Failed to load subjects. Status code');
+        handleHttpError(response.statusCode);
       }
     } on SocketException catch (_) {
       throw Exception('No Internet connection. Please check your network.');
     } on HttpException catch (_) {
       throw Exception('Could not find the requested resource.');
     } catch (e) {
-      throw Exception('Error fetching subjects:');
+      throw Exception('Error fetching subjects: $e');
+    }
+
+    // Return an empty list if an error occurs
+    return [];
+  }
+
+  void handleHttpError(int statusCode) {
+    setState(() {
+      isLoading = false;
+      errorMessage = 'Failed to load subjects. Status code: $statusCode';
+    });
+    if (statusCode == 401) {
+      throw Exception('Unauthorized request. Please check your credentials.');
+    } else {
+      throw Exception('Failed to load subjects. Status code: $statusCode');
     }
   }
 
@@ -126,14 +159,20 @@ class _PamelaState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  const Color(0xFFFDF7F2),
+      backgroundColor: const Color(0xFFFDF7F2),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
           HomeScreen(
-              subjectsFuture: _subjectsFuture,
-              firstName: _firstName,
-              initials: _initials),
+            subjectsFuture: _subjectsFuture,
+            firstName: _firstName,
+            initials: _initials,
+            pointsNotifier: _pointsNotifier,
+            onPointsChanged: _fetchPoints, // Callback to fetch points when they change
+            onRefresh: _refreshData, // Callback to refresh data
+            isLoading: isLoading,
+            errorMessage: errorMessage,
+          ),
           const ProfilePage(),
         ],
       ),
@@ -161,82 +200,135 @@ class HomeScreen extends StatelessWidget {
   final Future<List<Subject>> subjectsFuture;
   final String? firstName;
   final String? initials;
+  final ValueNotifier<int> pointsNotifier;
+  final VoidCallback onPointsChanged;
+  final Future<void> Function() onRefresh;
+  final bool isLoading;
+  final String errorMessage;
 
-  const HomeScreen(
-      {Key? key, required this.subjectsFuture, this.firstName, this.initials})
-      : super(key: key);
+  const HomeScreen({
+    Key? key,
+    required this.subjectsFuture,
+    this.firstName,
+    this.initials,
+    required this.pointsNotifier,
+    required this.onPointsChanged,
+    required this.onRefresh,
+    required this.isLoading,
+    required this.errorMessage,
+  }) : super(key: key);
 
-  Future<int> _fetchPoints() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('score') ?? 0;
+  Widget _buildSkeletonLoader() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: 8, // Number of skeleton cards to display
+      itemBuilder: (context, index) {
+        return Center(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonAnimation(
+                  child: Container(
+                    height: 20,
+                    width: MediaQuery.of(context).size.width * 0.6,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SkeletonAnimation(
+                  child: Container(
+                    height: 20,
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '👋 Hi ${firstName ?? 'There'},',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(), // Ensure the scroll physics allows pull-to-refresh
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '👋 Hi ${firstName ?? 'There'},',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        'Great to see you again!',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.brown,
+                        Text(
+                          'Great to see you again!',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.brown,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    child: SizedBox(
-                      child: Lottie.asset(
-                        'assets/books.json',
-                        repeat: true,
-                        width: 110,
+                      ],
+                    ),
+                    GestureDetector(
+                      child: SizedBox(
+                        child: Lottie.asset(
+                          'assets/panda.json',
+                          repeat: true,
+                          width: 110,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              FutureBuilder<int>(
-                future: _fetchPoints(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error loading points'));
-                  } else {
-                    return _buildStatSection(snapshot.data ?? 0);
-                  }
-                },
-              ),
-              const SizedBox(height: 5),
-              _buildCourseSection(context),
-              const SizedBox(height: 5),
-              _buildSubjectsSection(context),
-            ],
+                  ],
+                ),
+                ValueListenableBuilder<int>(
+                  valueListenable: pointsNotifier,
+                  builder: (context, points, child) {
+                    return _buildStatSection(points);
+                  },
+                ),
+                const SizedBox(height: 5),
+                _buildCourseSection(context),
+                const SizedBox(height: 5),
+                _buildSubjectsSection(context),
+              ],
+            ),
           ),
         ),
       ),
@@ -342,7 +434,7 @@ class HomeScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => DailyQuizScreen()),
-        );
+        ).then((_) => onPointsChanged()); // Callback to update points after returning
       },
       child: Container(
         padding: const EdgeInsets.all(15.0),
@@ -394,24 +486,23 @@ class HomeScreen extends StatelessWidget {
     return FutureBuilder<List<Subject>>(
       future: subjectsFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: Lottie.asset('assets/loader.json', width: 50));
+        if (isLoading) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height - 200, // Adjust the height as needed
+            child: _buildSkeletonLoader(),
+          );
         } else if (snapshot.hasError) {
-          if (snapshot.error.toString().contains('NetworkError')) {
-            return SizedBox(
-              child: Lottie.asset(
-                'assets/network.json',
-                repeat: true,
-                width: 110,
-              ),
-            );
-          } else {
-            return const Center(child: Text('Error fetching subjects:'));
-          }
+          return Center(child: Text(errorMessage));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No subjects available.'));
         } else {
-          return _buildSubjectsList(snapshot.data!, context);
+          return ListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _buildSubjectsList(snapshot.data!, context),
+            ],
+          );
         }
       },
     );
@@ -435,7 +526,7 @@ class HomeScreen extends StatelessWidget {
                   subject_name: '',
                 ),
               ),
-            );
+            ).then((_) => onPointsChanged()); // Callback to update points after returning
           },
           child: Card(
             elevation: 4,
@@ -448,7 +539,7 @@ class HomeScreen extends StatelessWidget {
                   subject.name ?? 'No name',
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      fontSize:18,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.brown,
                     ),
@@ -491,5 +582,3 @@ class Subject {
     );
   }
 }
-
-
