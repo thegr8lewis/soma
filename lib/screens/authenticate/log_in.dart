@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        color: const Color(0xFFFDF7F2),
+        color: Colors.white,
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -169,17 +169,17 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                         color: Colors.black,
                       ),
                     ),
+                    // SizedBox(height: screenHeight * 0.03),
+                    // Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
+                    //   textStyle: TextStyle(
+                    //     fontSize: screenHeight * 0.025,
+                    //     fontWeight: FontWeight.w100,
+                    //     color: Colors.black,
+                    //   ),
+                    // ),)),
                     SizedBox(height: screenHeight * 0.03),
-                    Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
-                      textStyle: TextStyle(
-                        fontSize: screenHeight * 0.025,
-                        fontWeight: FontWeight.w100,
-                        color: Colors.black,
-                      ),
-                    ),)),
-                    SizedBox(height: screenHeight * 0.01),
                     Text(
-                      'Enter your email and Password',
+                      'Login',
                       style: GoogleFonts.poppins(
                         textStyle: TextStyle(
                           fontSize: screenHeight * 0.025,
@@ -190,53 +190,62 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: screenHeight * 0.05),
+
                     TextField(
                       controller: _emailController,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.black),
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.email, color: Colors.white),
+                        prefixIcon: Icon(Icons.mail_outline, color: Colors.black87),
                         hintText: 'Email',
-                        hintStyle: const TextStyle(color: Colors.white),
+                        hintStyle: const TextStyle(color: Colors.black45),
                         filled: true,
-                        fillColor: Colors.grey[600],
+                        fillColor: Colors.grey[300],
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none, // No border but with rounded corners
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.green),
-                          borderRadius: BorderRadius.circular(10),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none, // No border but with rounded corners
                         ),
+                        // focusedBorder: OutlineInputBorder(
+                        //   borderRadius: BorderRadius.circular(30),
+                        //   borderSide: BorderSide(color: Colors.green, width: 2.0), // Green border when focused
+                        // ),
                         contentPadding: EdgeInsets.symmetric(
                           vertical: screenHeight * 0.02,
                           horizontal: screenWidth * 0.04,
                         ),
                       ),
                     ),
+
                     SizedBox(height: screenHeight * 0.02),
                     TextField(
                       controller: _passwordController,
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.black),
                       obscureText: _obscureText,
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock, color: Colors.white),
+                        prefixIcon: Icon(Icons.lock_outline, color: Colors.black87),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureText ? Icons.visibility_outlined : Icons.visibility_off,
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                           onPressed: _togglePasswordVisibility,
                         ),
                         hintText: 'Password',
-                        hintStyle: const TextStyle(color: Colors.white),
+                        hintStyle: const TextStyle(color: Colors.black45),
                         filled: true,
-                        fillColor: Colors.grey[600],
+                        fillColor: Colors.grey[300],
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none, // No border but with rounded corners
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.green),
-                          borderRadius: BorderRadius.circular(10),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none, // No border but with rounded corners
                         ),
+
                         contentPadding: EdgeInsets.symmetric(
                           vertical: screenHeight * 0.02,
                           horizontal: screenWidth * 0.04,
@@ -253,7 +262,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                       ),
                     SizedBox(height: screenHeight * 0.02),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end, // Aligns the text to the right
                       children: [
                         TextButton(
                           onPressed: () {
@@ -266,7 +275,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                             'Forgot password?',
                             style: GoogleFonts.poppins(
                               textStyle: TextStyle(
-                                fontSize: screenHeight * 0.015,
+                                fontSize: screenHeight * 0.018,
                                 color: Colors.blueAccent,
                               ),
                             ),
@@ -274,7 +283,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                         ),
                       ],
                     ),
-                    SizedBox(height: screenHeight * 0.03),
+
+                    SizedBox(height: screenHeight * 0.1),
                     ValueListenableBuilder<bool>(
                       valueListenable: _isButtonEnabled,
                       builder: (context, value, child) {
@@ -331,7 +341,7 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                         );
                       },
                     ),
-                    SizedBox(height: screenHeight * 0.1),
+                    SizedBox(height: screenHeight * 0.05),
                     Column(
                       children: [
                         Row(
