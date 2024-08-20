@@ -53,21 +53,13 @@ class _SplashScreenState extends State<SplashScreen> {
             Center(
               child: Text(
                 ' S O M A  A P P ',
-                style: GoogleFonts.pacifico(
-                  textStyle: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    letterSpacing: 2,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 5,
-                        color: Colors.yellow.withOpacity(0.5),
-                        offset: Offset(2, 2),
-                      ),
-                    ],
-                  ),
+                 style: GoogleFonts.poppins(
+                textStyle: TextStyle(
+                  fontSize: 25,
+                 
+                  color: Colors.black,
                 ),
+              ),
                 textAlign: TextAlign.center,
               ),
             ),

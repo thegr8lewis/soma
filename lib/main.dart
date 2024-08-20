@@ -11,6 +11,8 @@ import 'package:system_auth/screens/onboarding/splashscreen.dart';
 import 'package:system_auth/themes/theme_provider.dart';
 import 'package:system_auth/trialpages/apply.dart';
 import 'package:system_auth/trialpages/settings.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(
@@ -75,21 +77,34 @@ class _MyAppState extends State<MyApp> {
   }
 
   void sendWelcomeNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
+    // Load the image file into a ByteData object
+    final ByteData bytes = await rootBundle.load('assets/soma2.png');
+    final ByteArrayAndroidBitmap bigPictureBitmap = ByteArrayAndroidBitmap(bytes.buffer.asUint8List());
+
+    final BigPictureStyleInformation bigPictureStyleInformation = BigPictureStyleInformation(
+      bigPictureBitmap,
+      largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'), // Use your app's launcher icon
+      contentTitle: 'Hello, welcome to Soma App!',
+      summaryText: 'Welcome to our app',
+      htmlFormatContentTitle: true,
+      htmlFormatSummaryText: true,
+    );
+
+    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'welcome_channel_id',
       'welcome_channel_name',
       channelDescription: 'Channel for welcome notifications',
       importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
+      styleInformation: bigPictureStyleInformation,
     );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+
     await flutterLocalNotificationsPlugin.show(
       0,
       'Soma App',
-      'Hello,welcome to Soma App!',
+      'Hello, welcome to Soma App!',
       platformChannelSpecifics,
       payload: 'welcome_payload',
     );
@@ -103,14 +118,22 @@ class _MyAppState extends State<MyApp> {
       channelDescription: 'Channel for miss you notifications',
       importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
+      showWhen: true,
+      styleInformation: BigTextStyleInformation(
+        'Hey, It\'s SomaApp.\nWe have realized you started doing well in our platform.Would you like to try our new sets of Subjects .',
+        htmlFormatBigText: true,
+        contentTitle: 'Soma App',
+        htmlFormatContentTitle: true,
+        summaryText: 'Hey, It\'s SomaApp.',
+        htmlFormatSummaryText: true,
+      ),
     );
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
       1,
-      'We Miss You!',
-      'It\'s been a while since you last visited our app.',
+      'Soma App',
+      'Hey, It\'s SomaApp.\nWe have realized you started doing well in our platform.Would you like to try our new sets of Subjects .',
       platformChannelSpecifics,
       payload: 'miss_you_payload',
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../screens/home/activity_tracker.dart';
 
 class NotificationPage extends StatefulWidget {
@@ -41,8 +42,16 @@ class _NotificationPageState extends State<NotificationPage> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('E-Learning Platform'),
-        backgroundColor: Colors.white,
+              title: Text(
+                'Notifications Page ',
+                style: GoogleFonts.poppins(
+                  textStyle: TextStyle(
+                    fontSize: 25,
+                    
+                    color: Colors.black,
+                  ),
+                ),
+              ),        backgroundColor: Colors.white,
       ),
       body: GestureDetector(
         onTap: _activityTracker.userActivity,
@@ -55,15 +64,15 @@ class _NotificationPageState extends State<NotificationPage> {
                 size: 100,
                 color: Colors.blueAccent,
               ),
-              SizedBox(height: 20),
-              Text(
-                'Tap to simulate activity',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+              // SizedBox(height: 20),
+              // Text(
+              //   'Tap to simulate activity',
+              //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              // ),
               SizedBox(height: 20),
               Text(
                 'Stay active to receive notifications!',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 20, color: Colors.grey),
               ),
             ],
           ),

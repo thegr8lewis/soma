@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart'; // Add this import for Lottie animations
 
@@ -527,8 +528,18 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
       );
     } else {
       return Scaffold(
-        appBar: AppBar(title: const Text('Daily Quiz')),
-        body: Column(
+              appBar: AppBar(
+                title: Text(
+                  'Daily Quiz',
+                  style: GoogleFonts.poppins(
+                    textStyle: TextStyle(
+                      fontSize: 25,
+                      
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),        body: Column(
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),

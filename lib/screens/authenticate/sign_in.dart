@@ -170,13 +170,15 @@ class _SignInState extends State<SignIn> {
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.03),
-                    Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
+                    Center(child: Text('Access Education under the dollar',
+                    style: GoogleFonts.poppins(
                       textStyle: TextStyle(
                         fontSize: screenHeight * 0.025,
                         fontWeight: FontWeight.w100,
                         color: Colors.black,
                       ),
-                    ),)),
+                    ),
+                    )),
                     SizedBox(height: screenHeight * 0.01),
                     Text(
                       'Enter the details to continue',

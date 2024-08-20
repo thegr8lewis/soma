@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/home/home.dart';
+import 'package:system_auth/trialpages/notification.dart';
 
 import '../../../config.dart';
 import '../../../trialpages/apply.dart';
@@ -611,22 +612,22 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
-                // onTap: () {
-                //   Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage));
-                // },
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
+                },
               ),
-              ListTile(
-                leading: const Icon(Icons.notifications, color: Colors.grey),
-                title: Text(
-                  'Coupons',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
-              ),
+              // ListTile(
+              //   leading: const Icon(Icons.notifications, color: Colors.grey),
+              //   title: Text(
+              //     'Coupons',
+              //     style: GoogleFonts.poppins(
+              //       textStyle: const TextStyle(
+              //         color: Colors.black,
+              //       ),
+              //     ),
+              //   ),
+              //   trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
+              // ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
