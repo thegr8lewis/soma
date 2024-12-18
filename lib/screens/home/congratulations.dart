@@ -5,12 +5,19 @@ class CongratulationsPage extends StatelessWidget {
   final int score;
   final int totalQuestions;
   final int questionsAttempted;
+  final int originalQuestionCount; // Add this
 
   CongratulationsPage({
     required this.score,
     required this.totalQuestions,
     required this.questionsAttempted,
+    required this.originalQuestionCount, // Add this
   });
+
+  double calculatePercentage() {
+    if (questionsAttempted == 0) return 0;
+    return (score / (originalQuestionCount * 10)) * 100;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,7 @@ class CongratulationsPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-               SizedBox(
+              SizedBox(
                 child: Lottie.asset(
                   'assets/congratulations.json',
                   repeat: true,
@@ -39,7 +46,7 @@ class CongratulationsPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'You scored ${(score * 10)/questionsAttempted} %',
+                'You scored ${calculatePercentage().toStringAsFixed(1)}%',
                 style: const TextStyle(
                   fontSize: 24,
                   color: Colors.black,
@@ -47,13 +54,23 @@ class CongratulationsPage extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'You attempted $questionsAttempted out of $totalQuestions questions.',
+                // 'Original Questions: $originalQuestionCount\n'
+                'Total Attempts: $questionsAttempted',
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 18,
                   color: Colors.black54,
                 ),
               ),
               const SizedBox(height: 30),
+          Text(
+              'Final Score: ${calculatePercentage().toStringAsFixed(1)}%\n'
+              'Questions Attempted: $questionsAttempted\n'
+              'Total Questions: $originalQuestionCount',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18),
+            ),
+
               ElevatedButton(
                 onPressed: () {
                   Navigator.popUntil(context, (route) => route.isFirst);
@@ -75,7 +92,6 @@ class CongratulationsPage extends StatelessWidget {
                   ),
                 ),
               ),
-
             ],
           ),
         ),
