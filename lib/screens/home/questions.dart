@@ -184,16 +184,16 @@ class _QuestionsPageState extends State<QuestionsPage> {
   void prepareBatch() {
     int startIndex = (currentBatch - 1) * batchSize;
     int availableQuestions = allQuestions.length - startIndex;
-    
-    if (availableQuestions <= 0) {
+    List<Question> newQuestions = [];
+
+    if (availableQuestions <= 0 && wrongQuestions.isEmpty) {
       // No more questions available
       showCongratulations();
       return;
     }
 
     int newQuestionsNeeded = batchSize - wrongQuestions.length;
-    List<Question> newQuestions = [];
-    
+
     if (availableQuestions > 0) {
       newQuestions = allQuestions.skip(startIndex).take(newQuestionsNeeded).toList();
     }
@@ -411,22 +411,22 @@ class _QuestionsPageState extends State<QuestionsPage> {
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: LinearProgressIndicator(
-                                              value: questionsAttempted / (currentBatchQuestions.isNotEmpty ? currentBatchQuestions.length : 1),
-                                              backgroundColor: Colors.grey[300],
-                                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '${questionsAttempted}/${currentBatchQuestions.length}',
-                                            style: const TextStyle(fontSize: 16),
-                                          ),
-                                        ],
-                                      ),
+                                      // Row(
+                                      //   // children: [
+                                      //   //   // Expanded(
+                                      //   //   //   child: LinearProgressIndicator(
+                                      //   //   //     value: questionsAttempted / (currentBatchQuestions.isNotEmpty ? currentBatchQuestions.length : 1),
+                                      //   //   //     backgroundColor: Colors.grey[300],
+                                      //   //   //     valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                                      //   //   //   ),
+                                      //   //   // ),
+                                      //   //   // const SizedBox(width: 8),
+                                      //   //   // Text(
+                                      //   //   //   '${questionsAttempted}/${currentBatchQuestions.length}',
+                                      //   //   //   style: const TextStyle(fontSize: 16),
+                                      //   //   // ),
+                                      //   // ],
+                                      // ),
                                       const SizedBox(height: 8),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

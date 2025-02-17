@@ -79,18 +79,22 @@ class _MyAppState extends State<MyApp> {
   void sendWelcomeNotification() async {
     // Load the image file into a ByteData object
     final ByteData bytes = await rootBundle.load('assets/soma2.png');
-    final ByteArrayAndroidBitmap bigPictureBitmap = ByteArrayAndroidBitmap(bytes.buffer.asUint8List());
+    final ByteArrayAndroidBitmap bigPictureBitmap =
+        ByteArrayAndroidBitmap(bytes.buffer.asUint8List());
 
-    final BigPictureStyleInformation bigPictureStyleInformation = BigPictureStyleInformation(
+    final BigPictureStyleInformation bigPictureStyleInformation =
+        BigPictureStyleInformation(
       bigPictureBitmap,
-      largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'), // Use your app's launcher icon
+      largeIcon: DrawableResourceAndroidBitmap(
+          '@mipmap/ic_launcher'), // Use your app's launcher icon
       contentTitle: 'Hello, welcome to Soma App!',
       summaryText: 'Welcome to our app',
       htmlFormatContentTitle: true,
       htmlFormatSummaryText: true,
     );
 
-    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
       'welcome_channel_id',
       'welcome_channel_name',
       channelDescription: 'Channel for welcome notifications',
@@ -99,7 +103,8 @@ class _MyAppState extends State<MyApp> {
       styleInformation: bigPictureStyleInformation,
     );
 
-    final NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
       0,

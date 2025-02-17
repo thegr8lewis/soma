@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart'; // Add this import for Lottie animations
-
+import 'package:lottie/lottie.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../config.dart';
+import 'congratulations.dart';
 
 class DailyQuizScreen extends StatefulWidget {
   @override
@@ -16,118 +19,125 @@ class DailyQuizScreen extends StatefulWidget {
 
 class _DailyQuizScreenState extends State<DailyQuizScreen> {
   final _storage = const FlutterSecureStorage();
-
   List<dynamic> questions = [];
   bool isLoading = true;
   String errorMessage = '';
   int currentQuestionIndex = 0;
-  String? selectedAnswer;
-  String? selectedChoice; // Add this field
+  String? selectedChoice;
   String? correctAnswer;
   int score = 0;
   int questionsAttempted = 0;
-
-  late PageController _pageController;
-  int _currentPage = 0;
-  final List<String> _animations = [
-    'assets/jumps.json',
-    'assets/books.json',
-    'assets/tree.json',
-  ];
+  AudioPlayer audioPlayer = AudioPlayer();
+  final String apiKey = 'e4e855cee27d4bba9b9f70391fc7ef33';
+  final String correctSound = 'correct.mp3';
+  final String wrongSound = 'wrong.mp3';
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentPage);
-    _startAutoSlide();
     _fetchDailyQuiz();
+    _preloadAudio();
   }
 
-  void _startAutoSlide() {
-    Future.delayed(Duration(seconds: 3), () {
-      if (_pageController.hasClients) {
-        int nextPage = (_currentPage + 1) % _animations.length;
-        _pageController.animateToPage(
-          nextPage,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeIn,
-        );
-        setState(() {
-          _currentPage = nextPage;
-        });
-        _startAutoSlide();
+  Future<void> _preloadAudio() async {
+    try {
+      await audioPlayer.setSource(AssetSource(correctSound));
+      await audioPlayer.setSource(AssetSource(wrongSound));
+    } catch (e) {
+      print('Error initializing audio: $e');
+    }
+  }
+
+  Future<void> speak(String text) async {
+    final url = Uri.parse('https://api.voicerss.org/');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'key': apiKey,
+          'hl': 'en-us',
+          'src': text,
+          'c': 'MP3',
+          'f': '16khz_16bit_mono',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final audioContent = response.bodyBytes;
+        await audioPlayer.play(BytesSource(audioContent));
+      } else {
+        print('Failed to synthesize speech: ${response.body}');
       }
-    });
+    } catch (e) {
+      print('Error with text-to-speech: $e');
+    }
+  }
+
+  Future<void> playSound(String soundFile) async {
+    try {
+      await audioPlayer.play(AssetSource(soundFile));
+    } catch (e) {
+      print('Error playing sound: $e');
+    }
   }
 
   Future<void> _fetchDailyQuiz() async {
-  try {
-    List<Subject> subjects = await _retry(() => _fetchSubjects(), retries: 3);
-    if (subjects.isEmpty) {
-      setState(() {
-        isLoading = false;
-        errorMessage = 'No subjects available';
-      });
-      return;
-    }
+    try {
+      List<Subject> subjects = await _retry(() => _fetchSubjects(), retries: 3);
+      if (subjects.isEmpty) {
+        throw Exception('No subjects available');
+      }
 
-    Subject selectedSubject = subjects[Random().nextInt(subjects.length)];
-    List<Map<String, dynamic>> topics = await _retry(() => fetchTopics(selectedSubject.id), retries: 3);
-    
-    if (topics.isEmpty) {
-      setState(() {
-        isLoading = false;
-        errorMessage = 'No topics available for the selected subject';
-      });
-      return;
-    }
+      Subject selectedSubject = subjects[Random().nextInt(subjects.length)];
+      List<Map<String, dynamic>> topics =
+          await _retry(() => fetchTopics(selectedSubject.id), retries: 3);
+      if (topics.isEmpty) {
+        throw Exception('No topics available for the selected subject');
+      }
 
-    Map<String, dynamic> selectedTopic = topics[Random().nextInt(topics.length)];
-    await _retry(() => fetchQuestions(selectedSubject.name, selectedTopic['id'].toString()), retries: 3);
-
-    if (questions.isNotEmpty) {
-      await _retry(() => fetchOptionsAndAnswer(questions[currentQuestionIndex]['id'].toString()), retries: 3);
-    }
-  } catch (e) {
-    if (mounted) {
-      setState(() {
-        errorMessage = e.toString();
-        isLoading = false;
-      });
+      Map<String, dynamic> selectedTopic =
+          topics[Random().nextInt(topics.length)];
+      await _retry(
+          () => fetchQuestions(
+              selectedSubject.name, selectedTopic['id'].toString()),
+          retries: 3);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          errorMessage = e.toString();
+          isLoading = false;
+        });
+      }
     }
   }
-}
+
   Future<List<Subject>> _fetchSubjects() async {
-  try {
-    final sessionCookie = await _storage.read(key: 'session_cookie');
-    if (sessionCookie == null) {
-      setState(() {
-        errorMessage = 'Please login first';
-        isLoading = false;
-      });
-      return [];
-    }
+    try {
+      final sessionCookie = await _storage.read(key: 'session_cookie');
+      if (sessionCookie == null) {
+        throw Exception('No session cookie found');
+      }
 
-    final response = await http.get(
-      Uri.parse('$BASE_URL/subjects'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': sessionCookie,
-      },
-    );
+      final response = await http.get(
+        Uri.parse('$BASE_URL/subjects'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': sessionCookie,
+        },
+      );
 
-    if (response.statusCode == 200) {
-      List<dynamic> body = json.decode(response.body);
-      return body.map((dynamic item) => Subject.fromJson(item)).toList();
-    } else if (response.statusCode == 401) {
-      throw Exception('Session expired. Please login again.');
-    } else {
-      throw Exception('Failed to load subjects. Status code: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        List<dynamic> body = json.decode(response.body);
+        return body.map((dynamic item) => Subject.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to load subjects. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching subjects: $e');
     }
-  } catch (e) {
-    throw Exception('Error fetching subjects: ${e.toString()}');
   }
-}
+
   Future<List<Map<String, dynamic>>> fetchTopics(String subjectId) async {
     final url = '$BASE_URL/$subjectId/topics';
 
@@ -141,11 +151,6 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
 
       if (response.statusCode == 200) {
         final List<dynamic> parsedTopics = json.decode(response.body);
-        for (var topic in parsedTopics) {
-          final totalQuestions = await fetchTotalQuestions(
-              topic['id'].toString());
-          topic['total_questions'] = totalQuestions;
-        }
         return parsedTopics.cast<Map<String, dynamic>>();
       } else {
         throw Exception('No topics available');
@@ -153,11 +158,6 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
     } catch (e) {
       throw e;
     }
-  }
-
-  Future<int> fetchTotalQuestions(String topicId) async {
-    // Implement this method according to your backend API to get the total questions for a topic
-    return 0;
   }
 
   Future<void> fetchQuestions(String subjectName, String topicId) async {
@@ -190,54 +190,6 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
     }
   }
 
-    Future<void> fetchOptionsAndAnswer(String questionId) async {
-    final url = '$BASE_URL/questions/$questionId/options';
-  
-    try {
-      final response = await http.get(Uri.parse(url));
-      
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        
-        // Handle empty array response
-        if (responseData is List && responseData.isEmpty) {
-          setState(() {
-            // Set default options for testing
-            questions[currentQuestionIndex]['options'] = {
-              'A': 'Option A',
-              'B': 'Option B',
-              'C': 'Option C',
-              'D': 'Option D'
-            };
-            correctAnswer = 'A'; // Default correct answer
-          });
-          return;
-        }
-  
-        setState(() {
-          if (currentQuestionIndex < questions.length) {
-            questions[currentQuestionIndex]['options'] = 
-              responseData is Map ? responseData['options'] : 
-              responseData.asMap().map((k,v) => MapEntry('option_${k+1}', v));
-            correctAnswer = responseData is Map ? 
-              responseData['correct_answer']?.toString() : 
-              'option_1';
-          }
-        });
-      } else {
-        throw Exception('Failed to load options (${response.statusCode})');
-      }
-    } catch (e) {
-      print('Error fetching options: $e');
-      // Don't set error message for empty options
-      if (e.toString() != 'Exception: Empty options list') {
-        setState(() {
-          errorMessage = 'Error loading options: $e';
-        });
-      }
-    }
-  }
-
   Future<T> _retry<T>(Future<T> Function() action,
       {int retries = 3, Duration delay = const Duration(seconds: 1)}) async {
     int attempt = 0;
@@ -258,9 +210,8 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
     if (currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
-        selectedAnswer = null;
-        selectedChoice = null; // Reset selected choice
-        fetchOptionsAndAnswer(questions[currentQuestionIndex]['id'].toString());
+        selectedChoice = null;
+        speak(questions[currentQuestionIndex]['question']);
       });
     } else {
       setState(() {
@@ -273,9 +224,8 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
     if (currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
-        selectedAnswer = null;
-        selectedChoice = null; // Reset selected choice
-        fetchOptionsAndAnswer(questions[currentQuestionIndex]['id'].toString());
+        selectedChoice = null;
+        speak(questions[currentQuestionIndex]['question']);
       });
     } else {
       setState(() {
@@ -288,35 +238,41 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            CongratulationsPage(
-              score: score,
-              totalQuestions: questionsAttempted,
-            ),
+        builder: (context) => CongratulationsPage(
+          score: score,
+          totalQuestions: questionsAttempted,
+        ),
       ),
     );
   }
 
-  void checkAnswer() {
+  void checkAnswer() async {
     if (selectedChoice == null) return;
 
     String correctAnswer = questions[currentQuestionIndex]['correct_answer'];
     bool isCorrect = selectedChoice == correctAnswer;
 
-    if (isCorrect) {
-      score++;
+    try {
+      if (isCorrect) {
+        score++;
+        await playSound(correctSound);
+      } else {
+        await playSound(wrongSound);
+      }
+    } catch (e) {
+      print('Error playing answer sound: $e');
     }
 
     questionsAttempted++;
 
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isDismissible: false,
       builder: (BuildContext context) {
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16.0),
-          color: const Color(0xFF212121), // Dark background color
+          color: const Color(0xFF212121),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -363,28 +319,16 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
                   if (currentQuestionIndex + 1 < questions.length) {
                     setState(() {
                       currentQuestionIndex++;
-                      selectedAnswer = null;
-                      selectedChoice = null; // Reset selected choice
-                      fetchOptionsAndAnswer(
-                          questions[currentQuestionIndex]['id'].toString());
+                      selectedChoice = null;
                     });
+                    speak(questions[currentQuestionIndex]['question']);
                   } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            CongratulationsPage(
-                              score: score,
-                              totalQuestions: questionsAttempted,
-                            ),
-                      ),
-                    );
+                    _showResults();
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isCorrect ? Colors.green : Colors.red,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16, horizontal: 64),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 64),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -404,90 +348,109 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
       },
     );
   }
-Widget buildQuestion() {
-  if (currentQuestionIndex >= questions.length) {
-    return const Center(child: Text('No questions available'));
-  }
 
-  var question = questions[currentQuestionIndex];
-  Map<String, dynamic> options = {};
-  
-  try {
-    var rawOptions = question['options'];
-    if (rawOptions is Map<String, dynamic>) {
-      options = rawOptions;
-    } else if (rawOptions is List) {
-      // Convert list to map if needed
-      for (var i = 0; i < rawOptions.length; i++) {
-        options['option_${i + 1}'] = rawOptions[i];
-      }
+  Widget buildQuestion() {
+    if (currentQuestionIndex >= questions.length) {
+      return const Center(child: Text('No questions available'));
     }
-  } catch (e) {
-    print('Error processing options: $e');
-    return Center(
+
+    var question = questions[currentQuestionIndex];
+    var options = question['options'].entries.toList();
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Error loading question options'),
-          ElevatedButton(
-            onPressed: () {
-              fetchOptionsAndAnswer(question['id'].toString());
-            },
-            child: const Text('Retry loading options'),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                child: Lottie.asset(
+                  'assets/jumps.json',
+                  repeat: true,
+                  width: 110,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Text(
+                      question['question'],
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  if (options.isEmpty) {
-    return Center(
+   Widget buildBottomButtons() {
+    if (currentQuestionIndex >= questions.length) {
+      return Container(); // Return empty container if no questions
+    }
+  
+    var question = questions[currentQuestionIndex];
+    // Safely handle options map
+    Map<String, dynamic> optionsMap = {};
+    if (question['options'] is Map) {
+      optionsMap = Map<String, dynamic>.from(question['options']);
+    }
+  
+    List<MapEntry<String, dynamic>> options = optionsMap.entries.toList();
+  
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('No options available for this question'),
-          ElevatedButton(
-            onPressed: () {
-              fetchOptionsAndAnswer(question['id'].toString());
-            },
-            child: const Text('Retry loading options'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: options.map<Widget>((option) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    selectedChoice = option.key;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: selectedChoice == option.key ? Colors.blue[700] : Colors.orange[400],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                    option.value.toString(),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+            )).toList(),
           ),
-        ],
-      ),
-    );
-  }
-
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          question['question'] ?? 'Question not available',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        ...options.entries.map((option) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                selectedChoice = option.key;
-              });
-            },
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: checkAnswer,
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
-              backgroundColor: selectedChoice == option.key 
-                ? Colors.green[700] 
-                : Colors.orange[400],
+              backgroundColor: Colors.blue[800],
             ),
-            child: Text(option.value.toString()),
+            child: const Text('Check Answer'),
           ),
-        )).toList(),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -514,7 +477,8 @@ Widget buildQuestion() {
                 repeat: true,
               ),
               const SizedBox(height: 20),
-              Text(errorMessage,
+              Text(
+                errorMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 18),
               ),
@@ -535,18 +499,18 @@ Widget buildQuestion() {
       );
     } else {
       return Scaffold(
-              appBar: AppBar(
-                title: Text(
-                  'Daily Quiz',
-                  style: GoogleFonts.poppins(
-                    textStyle: TextStyle(
-                      fontSize: 25,
-                      
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),        body: Column(
+        appBar: AppBar(
+          title: Text(
+            'Daily Quiz',
+            style: GoogleFonts.poppins(
+              textStyle: TextStyle(
+                fontSize: 25,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+        body: Column(
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -573,12 +537,12 @@ Widget buildQuestion() {
               ),
             ),
             Expanded(child: buildQuestion()),
+            buildBottomButtons(),
           ],
         ),
       );
     }
   }
-
 }
 
 class Subject {
@@ -614,7 +578,6 @@ class CongratulationsPage extends StatelessWidget {
                 'assets/books.json',
                 repeat: true,
                 width: 200,
-
               ),
             ),
             const Text(

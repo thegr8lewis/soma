@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
@@ -24,6 +23,8 @@ class TopicsPage extends StatefulWidget {
 class _TopicsPageState extends State<TopicsPage> {
   List<Map<String, dynamic>> topics = [];
   bool isLoading = true;
+  bool isInitialLoad = true; // New state variable
+  String? errorMessage;
 
   @override
   void initState() {
@@ -42,55 +43,60 @@ class _TopicsPageState extends State<TopicsPage> {
 
       if (response.statusCode == 200) {
         final List<dynamic> parsedTopics = json.decode(response.body);
+        
+        if (parsedTopics.isEmpty) {
+          setState(() {
+            isLoading = false;
+            isInitialLoad = false;
+            errorMessage = 'No topics available for now.';
+          });
+          return;
+        }
+
+        // Load total questions for each topic
         for (var topic in parsedTopics) {
           final totalQuestions = await fetchTotalQuestions(topic['id']);
           topic['total_questions'] = totalQuestions;
         }
+
         setState(() {
           topics = parsedTopics.cast<Map<String, dynamic>>();
           isLoading = false;
+          isInitialLoad = false;
         });
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
-        throw Exception('Failed to load topics. Status code: ${response.statusCode}');
+        // throw Exception('Failed to load topics. Status code: ${response.statusCode}');
+        throw Exception('No topics found');
       }
-    } on SocketException catch (_) {
-      throw Exception('No Internet connection. Please check your network.');
-    } on HttpException catch (_) {
-      throw Exception('Could not find the requested resource.');
-    } on FormatException catch (_) {
-      throw Exception('Bad response format. Unable to parse the data.');
     } catch (e) {
-      throw Exception('Error fetching topics: ');
+      setState(() {
+        isLoading = false;
+        isInitialLoad = false;
+        errorMessage = e.toString();
+      });
     }
   }
 
-  Future<int> fetchTotalQuestions(int topicId) async {
+    Future<int> fetchTotalQuestions(int topicId) async {
     try {
       final response = await http.get(
         Uri.parse('$BASE_URL/questions/${widget.subjectName}/$topicId'),
       );
-
+  
       if (response.statusCode == 200) {
         final questions = json.decode(response.body) as List<dynamic>;
+        if (questions.isEmpty) {
+          return 0; // Return 0 if no questions found
+        }
         return questions.length;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized request. Please check your credentials.');
       } else {
         throw Exception('Failed to load questions. Status code: ${response.statusCode}');
+        // throw Exception('No topics found');
       }
-    } on SocketException catch (_) {
-      throw Exception('No Internet connection. Please check your network.');
-    } on HttpException catch (_) {
-      throw Exception('Could not find the requested resource.');
-    } on FormatException catch (_) {
-      throw Exception('Bad response format. Unable to parse the data.');
     } catch (e) {
-      throw Exception('Error fetching total questions: ');
+      throw Exception('Error fetching total questions: $e');
     }
   }
-
 
   Widget _buildSkeletonLoader() {
     return ListView.builder(
@@ -154,66 +160,86 @@ class _TopicsPageState extends State<TopicsPage> {
           ),
         ),
       ),
-      body: isLoading
+      body: isInitialLoad
           ? _buildSkeletonLoader()
-          : ListView.builder(
-              itemCount: topics.length,
-              itemBuilder: (context, index) {
-                final topic = topics[index];
-                return Center( // Center the container within the ListView
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.9, // Control the width here
-                    margin: const EdgeInsets.symmetric(vertical: 8), // Adjust vertical margin
-                    padding: const EdgeInsets.all(16), // Adjust padding
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
+          : errorMessage != null
+              ? Center(
+                  child: Text(
+                    errorMessage!,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.black54,
                     ),
-                    child: ListTile(
-                      title: Text(
-                        topic['topic_name'] ?? 'No name', // Use null-aware operator
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown,
-                          ),
+                  ),
+                )
+              : topics.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No topics available for now.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black54,
                         ),
                       ),
-                      trailing: Text(
-                        '${topic['total_questions'] ?? 0} Q', // Display total questions
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuestionsPage(
-                              topicId: topic['id'] ?? 0, // Example default value
-                              topicName: topic['topic_name'] ?? 'Unknown', // Example default value
-                              subjectName: widget.subjectName,
+                    )
+                  : ListView.builder(
+                      itemCount: topics.length,
+                      itemBuilder: (context, index) {
+                        final topic = topics[index];
+                        return Center( // Center the container within the ListView
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.9, // Control the width here
+                            margin: const EdgeInsets.symmetric(vertical: 8), // Adjust vertical margin
+                            padding: const EdgeInsets.all(16), // Adjust padding
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                topic['topic_name'] ?? 'No name', // Use null-aware operator
+                                style: GoogleFonts.poppins(
+                                  textStyle: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.brown,
+                                  ),
+                                ),
+                              ),
+                              trailing: Text(
+                                '${topic['total_questions'] ?? 0} Q', // Display total questions
+                                style: GoogleFonts.poppins(
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => QuestionsPage(
+                                      topicId: topic['id'] ?? 0, // Example default value
+                                      topicName: topic['topic_name'] ?? 'Unknown', // Example default value
+                                      subjectName: widget.subjectName,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         );
                       },
                     ),
-                  ),
-                );
-              },
-            ),
     );
   }
 }

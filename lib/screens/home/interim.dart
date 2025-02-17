@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:system_auth/models/modelquestions.dart';
+import 'package:system_auth/trialpages/apply.dart';
 
 class InterimResultsPage extends StatelessWidget {
   final int score;
@@ -103,7 +104,12 @@ class InterimResultsPage extends StatelessWidget {
                       children: [
                         ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.popUntil(context, (route) => route.isFirst);
+                           Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Homepage(),
+                        ),
+                      );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red[400],
@@ -118,7 +124,7 @@ class InterimResultsPage extends StatelessWidget {
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ),
-                        if (batchNumber * 10 < totalQuestions)
+                        if (batchNumber * 10 < totalQuestions || wrongQuestions.isNotEmpty)
                           ElevatedButton.icon(
                             onPressed: onContinue,
                             style: ElevatedButton.styleFrom(
@@ -129,9 +135,9 @@ class InterimResultsPage extends StatelessWidget {
                               ),
                             ),
                             icon: const Icon(Icons.arrow_forward),
-                            label: const Text(
-                              'Next Questions',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            label: Text(
+                              batchNumber * 10 >= totalQuestions && wrongQuestions.isNotEmpty ? 'Failed Questions' : 'Next Questions',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                       ],
