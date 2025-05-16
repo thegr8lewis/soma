@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:lottie/lottie.dart';
 
 
 
 class ChatPage extends StatefulWidget {
+  const ChatPage({super.key});
+
   @override
   _ChatPageState createState() => _ChatPageState();
 }
@@ -68,7 +69,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Student Chat'),
+        title: const Text('Student Chat'),
       ),
       body: Column(
         children: [
@@ -78,15 +79,15 @@ class _ChatPageState extends State<ChatPage> {
               itemBuilder: (context, index) {
                 final message = _messages[index];
                 return ListTile(
-                  leading: message['role'] == 'llama' ? Icon(FontAwesomeIcons.robot, color: Colors.green) : Icon(FontAwesomeIcons.user, color: Colors.blue),
+                  leading: message['role'] == 'llama' ? const Icon(FontAwesomeIcons.robot, color: Colors.green) : const Icon(FontAwesomeIcons.user, color: Colors.blue),
                   title: Text(message['text'] ?? 'Error: Message text is null'),
                 );
               },
             ),
           ),
           if (_isLoading)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
               child: CircularProgressIndicator(),
             ),
           Padding(
@@ -105,7 +106,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.send),
+                  icon: const Icon(Icons.send),
                   onPressed: () => _sendMessage(_questionController.text),
                 ),
               ],

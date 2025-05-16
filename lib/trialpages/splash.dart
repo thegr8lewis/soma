@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/onboarding/onboarding_page.dart';
 
 class SplashScreen1 extends StatefulWidget {
+  const SplashScreen1({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -16,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen1> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 3), () {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => OnboardingPage()),
+          MaterialPageRoute(builder: (context) => const OnboardingPage()),
         );
       });
     });
@@ -27,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen1> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Container(
+        child: SizedBox(
           height: 300,
           width: 300,
           child: Center(

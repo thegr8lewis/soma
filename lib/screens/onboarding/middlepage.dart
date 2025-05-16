@@ -5,17 +5,19 @@ import 'package:system_auth/screens/authenticate/sign_in.dart';
 
 
 class MiddlePage extends StatelessWidget {
+  const MiddlePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFDF7F2),
+      backgroundColor: const Color(0xFFFDF7F2),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Spacer(),
+              const Spacer(),
               SizedBox(
                 height: 200,
                 child: Lottie.asset(
@@ -25,16 +27,16 @@ class MiddlePage extends StatelessWidget {
                   height: 200,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Center(
                 child: Column(
                   children: [
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF3E81F3),
-                        padding: EdgeInsets.symmetric(horizontal: 64, vertical: 16),
-                        textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        backgroundColor: const Color(0xFF3E81F3),
+                        padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -46,15 +48,15 @@ class MiddlePage extends StatelessWidget {
                           MaterialPageRoute(builder: (context) => const LogIn()),
                         );
                       },
-                      child: Text('Login'),
+                      child: const Text('Login'),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Color(0xFF3E81F3),
-                        side: BorderSide(color: Color(0xFF3E81F3), width: 2),
-                        padding: EdgeInsets.symmetric(horizontal: 64, vertical: 16),
-                        textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        foregroundColor: const Color(0xFF3E81F3),
+                        side: const BorderSide(color: Color(0xFF3E81F3), width: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -65,12 +67,12 @@ class MiddlePage extends StatelessWidget {
                           MaterialPageRoute(builder: (context) => const SignIn()),
                         );
                       },
-                      child: Text('Sign Up'),
+                      child: const Text('Sign Up'),
                     ),
                   ],
                 ),
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),

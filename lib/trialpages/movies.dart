@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MovieDetailsPage extends StatelessWidget {
   final Map<String, dynamic> movieData;
 
-  const MovieDetailsPage({Key? key, required this.movieData}) : super(key: key);
+  const MovieDetailsPage({super.key, required this.movieData});
 
   @override
   Widget build(BuildContext context) {
@@ -23,28 +23,28 @@ class MovieDetailsPage extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               const SizedBox(height: 16.0),
-              Text(
+              const Text(
                 'Overview',
                 
               ),
               const SizedBox(height: 8.0),
               Text(movieData['overview']),
               const SizedBox(height: 16.0),
-              Text(
+              const Text(
                 'Release Date',
                 
               ),
               const SizedBox(height: 8.0),
               Text(movieData['release_date']),
               const SizedBox(height: 16.0),
-              Text(
+              const Text(
                 'Vote Average',
                 
               ),
               const SizedBox(height: 8.0),
               Text('${movieData['vote_average']} / 10'),
               const SizedBox(height: 16.0),
-              Text(
+              const Text(
                 'Vote Count',
                 
               ),

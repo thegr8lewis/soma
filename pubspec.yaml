@@ -55,6 +55,13 @@ flutter:
 
   assets:
     - assets/
+    - assets/soma2.png
+    - assets/jumps.json
+    - assets/books.json
+    - assets/star.gif
+    - assets/panda.json
+    - assets/correct.mp3
+    - assets/wrong.mp3
 
   fonts:
     - family: Lexus

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:system_auth/screens/onboarding/info/custom_appbar.dart';
 
 class TipsPage extends StatefulWidget {
+  const TipsPage({super.key});
+
   @override
   _TipsPageState createState() => _TipsPageState();
 }
@@ -17,7 +19,7 @@ class _TipsPageState extends State<TipsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: Text("Organizer Tips"),
       ),
       extendBodyBehindAppBar: true,
@@ -89,8 +91,8 @@ class _TipsPageState extends State<TipsPage> {
           width: 0.5,
         ),
       ),
-      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-      padding: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+      padding: const EdgeInsets.all(8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -104,14 +106,14 @@ class _TipsPageState extends State<TipsPage> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               description,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

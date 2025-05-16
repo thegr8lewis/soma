@@ -61,7 +61,7 @@ class _SendEmailFromFlutterAppState extends State<SendEmailFromFlutterApp> {
                         hintText: "Enter subject",
                         hintStyle: TextStyle(fontSize: textFieldFontSize),
                         labelStyle: TextStyle(color: Colors.grey, fontSize: textFieldFontSize),
-                        enabledBorder: OutlineInputBorder(
+                        enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey),
                         ),
                         focusedBorder: OutlineInputBorder(
@@ -85,7 +85,7 @@ class _SendEmailFromFlutterAppState extends State<SendEmailFromFlutterApp> {
                         hintText: "Enter body (max 400 characters)",
                         hintStyle: TextStyle(fontSize: textFieldFontSize),
                         labelStyle: TextStyle(color: Colors.grey, fontSize: textFieldFontSize),
-                        enabledBorder: OutlineInputBorder(
+                        enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.grey),
                         ),
                         focusedBorder: OutlineInputBorder(
@@ -106,11 +106,11 @@ class _SendEmailFromFlutterAppState extends State<SendEmailFromFlutterApp> {
                       onPressed: () {
                         if (subject.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Please enter a subject')),
+                            const SnackBar(content: Text('Please enter a subject')),
                           );
                         } else if (body.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Please enter the body of the email')),
+                            const SnackBar(content: Text('Please enter the body of the email')),
                           );
                         } else if (key.currentState!.validate()) {
                           key.currentState!.save();
@@ -118,7 +118,7 @@ class _SendEmailFromFlutterAppState extends State<SendEmailFromFlutterApp> {
                           subject.clear();
                           body.clear();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Email Sent Successfully')),
+                            const SnackBar(content: Text('Email Sent Successfully')),
                           );
                         }
                       },

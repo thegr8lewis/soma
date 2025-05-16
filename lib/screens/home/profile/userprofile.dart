@@ -5,13 +5,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
-import 'package:system_auth/screens/home/home.dart';
 import 'package:system_auth/trialpages/notification.dart';
 
 import '../../../config.dart';
 import '../../../trialpages/apply.dart';
-import '../../../trialpages/notification pge.dart';
-import '../../../trialpages/notification pge.dart';
 import '../sendemail.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -37,15 +34,14 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchUserData();
   }
-
   Future<void> _fetchUserData() async {
     try {
-      final sessionCookie = await _storage.read(key: 'session_cookie');
+      final authToken = await _storage.read(key: 'auth_token');
       final response = await http.get(
-        Uri.parse('$BASE_URL/profile'),
+        Uri.parse('$BASE_URL/user/profile'),
         headers: {
           'Content-Type': 'application/json',
-          'Cookie': sessionCookie ?? '',
+          'Authorization': 'Bearer $authToken',
         },
       );
 
@@ -96,15 +92,14 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     }
   }
-
   Future<void> _updateProfile(String newName, int newGrade) async {
     try {
-      final sessionCookie = await _storage.read(key: 'session_cookie');
+      final authToken = await _storage.read(key: 'auth_token');
       final response = await http.put(
-        Uri.parse('$BASE_URL/update'),
+        Uri.parse('$BASE_URL/user/update'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
-          'Cookie': sessionCookie ?? '',
+          'Authorization': 'Bearer $authToken',
         },
         body: jsonEncode(<String, dynamic>{
           'username': newName,
@@ -613,7 +608,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationPage()));
                 },
               ),
               // ListTile(
@@ -652,7 +647,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendEmailFromFlutterApp()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SendEmailFromFlutterApp()));
                 },
               ),
               ListTile(
@@ -667,7 +662,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 20),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SendEmailFromFlutterApp()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SendEmailFromFlutterApp()));
                 },
               ),
               Padding(

@@ -7,12 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../config.dart';
-import 'congratulations.dart';
 
 class DailyQuizScreen extends StatefulWidget {
+  const DailyQuizScreen({super.key});
+
   @override
   _DailyQuizScreenState createState() => _DailyQuizScreenState();
 }
@@ -111,19 +110,18 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
       }
     }
   }
-
   Future<List<Subject>> _fetchSubjects() async {
     try {
-      final sessionCookie = await _storage.read(key: 'session_cookie');
-      if (sessionCookie == null) {
-        throw Exception('No session cookie found');
+      final authToken = await _storage.read(key: 'auth_token');
+      if (authToken == null) {
+        throw Exception('No authentication token found');
       }
 
       final response = await http.get(
         Uri.parse('$BASE_URL/subjects'),
         headers: {
           'Content-Type': 'application/json',
-          'Cookie': sessionCookie,
+          'Authorization': 'Bearer $authToken',
         },
       );
 
@@ -137,15 +135,16 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
       throw Exception('Error fetching subjects: $e');
     }
   }
-
   Future<List<Map<String, dynamic>>> fetchTopics(String subjectId) async {
     final url = '$BASE_URL/$subjectId/topics';
 
     try {
+      final authToken = await _storage.read(key: 'auth_token');
       final response = await http.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
         },
       );
 
@@ -156,15 +155,21 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
         throw Exception('No topics available');
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
-
   Future<void> fetchQuestions(String subjectName, String topicId) async {
     final url = '$BASE_URL/questions/$subjectName/$topicId';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final authToken = await _storage.read(key: 'auth_token');
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
       if (response.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -503,7 +508,7 @@ class _DailyQuizScreenState extends State<DailyQuizScreen> {
           title: Text(
             'Daily Quiz',
             style: GoogleFonts.poppins(
-              textStyle: TextStyle(
+              textStyle: const TextStyle(
                 fontSize: 25,
                 color: Colors.black,
               ),
@@ -563,7 +568,7 @@ class CongratulationsPage extends StatelessWidget {
   final int score;
   final int totalQuestions;
 
-  CongratulationsPage({required this.score, required this.totalQuestions});
+  const CongratulationsPage({super.key, required this.score, required this.totalQuestions});
 
   @override
   Widget build(BuildContext context) {

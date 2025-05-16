@@ -20,7 +20,7 @@ class ActivityTracker extends ChangeNotifier {
     _activityTimer?.cancel();
     _inactivityTimer?.cancel();
 
-    _activityTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    _activityTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       _activeMinutes += 1;
       if (_activeMinutes == 1) {
         NotificationService.showNotification(1, 'Good work', 'Keep working!');
@@ -31,7 +31,7 @@ class ActivityTracker extends ChangeNotifier {
       }
     });
 
-    _inactivityTimer = Timer(Duration(hours: 5), () {
+    _inactivityTimer = Timer(const Duration(hours: 5), () {
       NotificationService.showNotification(3, 'We have missed you', 'Come back and keep learning!');
       _activeMinutes = 0;
       notifyListeners();

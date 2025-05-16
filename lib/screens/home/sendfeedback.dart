@@ -6,6 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
 
 class SendFeedbackPage extends StatefulWidget {
+  const SendFeedbackPage({super.key});
+
   @override
   _SendFeedbackPageState createState() => _SendFeedbackPageState();
 }

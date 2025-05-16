@@ -3,7 +3,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageService {
-  final _storage = FlutterSecureStorage();
+  final _storage = const FlutterSecureStorage();
 
   Future<void> saveUserProgress(String userId, int progress) async {
     await _storage.write(key: 'progress_$userId', value: progress.toString());

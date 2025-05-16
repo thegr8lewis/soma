@@ -3,18 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:system_auth/screens/onboarding/info/custom_appbar.dart';
 
 class AboutPage extends StatefulWidget {
+  const AboutPage({super.key});
+
   @override
   _AboutPageState createState() => _AboutPageState();
 }
 
 class _AboutPageState extends State<AboutPage> {
-  List<bool> _isCardExpanded = List.generate(10, (index) => false);
+  final List<bool> _isCardExpanded = List.generate(10, (index) => false);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: Text("About Organizer"),
       ),
       body: SingleChildScrollView(
@@ -91,9 +93,9 @@ class _AboutPageState extends State<AboutPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        margin: EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         child: ExpansionTile(
-            childrenPadding: EdgeInsets.all(0),
+            childrenPadding: const EdgeInsets.all(0),
             onExpansionChanged: (isExpanded) {
               setState(() {
                 _isCardExpanded[index] = isExpanded;
@@ -107,16 +109,16 @@ class _AboutPageState extends State<AboutPage> {
                   color: Theme.of(context).colorScheme.primary,
                   size: 25,
                 ),
-                SizedBox(width: 8.0),
+                const SizedBox(width: 8.0),
                 Text(
                   title,
-                  style: TextStyle(fontSize: 20),
+                  style: const TextStyle(fontSize: 20),
                 ),
               ],
             ),
             children: [
               Padding(
-                  padding: EdgeInsets.only(left: 16, bottom: 20),
+                  padding: const EdgeInsets.only(left: 16, bottom: 20),
                   child: SizedBox(
                     width: double.infinity,
                     child: Column(
@@ -124,7 +126,7 @@ class _AboutPageState extends State<AboutPage> {
                       children: [
                         Text(
                           subtitle,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w300,
                             fontSize: 20,
                           ),

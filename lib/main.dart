@@ -2,19 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:system_auth/screens/authenticate/forgot_pass.dart';
-import 'package:system_auth/screens/authenticate/grade.dart';
-import 'package:system_auth/screens/authenticate/log_in.dart';
-import 'package:system_auth/screens/home/profile/userprofile.dart';
-import 'package:system_auth/screens/onboarding/middlepage.dart';
 import 'package:system_auth/screens/onboarding/splashscreen.dart';
 import 'package:system_auth/themes/theme_provider.dart';
-import 'package:system_auth/trialpages/apply.dart';
-import 'package:system_auth/trialpages/settings.dart';
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(
     MultiProvider(
       providers: [
@@ -26,7 +20,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -49,7 +43,7 @@ class _MyAppState extends State<MyApp> {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    final InitializationSettings initializationSettings =
+    const InitializationSettings initializationSettings =
         InitializationSettings(
       android: initializationSettingsAndroid,
     );
@@ -85,7 +79,7 @@ class _MyAppState extends State<MyApp> {
     final BigPictureStyleInformation bigPictureStyleInformation =
         BigPictureStyleInformation(
       bigPictureBitmap,
-      largeIcon: DrawableResourceAndroidBitmap(
+      largeIcon: const DrawableResourceAndroidBitmap(
           '@mipmap/ic_launcher'), // Use your app's launcher icon
       contentTitle: 'Hello, welcome to Soma App!',
       summaryText: 'Welcome to our app',
@@ -150,7 +144,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
       // home: const Homepage(),

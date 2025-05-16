@@ -11,7 +11,7 @@ ThemeData lightMode = ThemeData(
   scaffoldBackgroundColor: AppColors.scaffoldBackgroundLight,
   brightness: Brightness.light,
   colorScheme: ColorScheme.light(
-    background: AppColors.backgroundLight,
+    surface: AppColors.backgroundLight,
     primary: AppColors.primaryLight400,
     secondary: AppColors.primaryLight50,
   ),

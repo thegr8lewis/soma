@@ -14,7 +14,7 @@ class NotificationService {
             content: Text(message),
             actions: [
               TextButton(
-                child: Text('DISMISS'),
+                child: const Text('DISMISS'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },

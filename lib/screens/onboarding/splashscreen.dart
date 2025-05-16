@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:system_auth/screens/onboarding/info/on.dart';
-import 'package:system_auth/trialpages/apply.dart';
+//import 'package:system_auth/screens/authenticate/login.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -19,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _startSplashScreen() async {
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
     _checkLoginStatus();
   }
 
@@ -27,11 +30,11 @@ class _SplashScreenState extends State<SplashScreen> {
     final sessionCookie = await _storage.read(key: 'session_cookie');
     if (sessionCookie != null) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => Homepage()),
+        MaterialPageRoute(builder: (context) => const LogIn()),
       );
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => OnboardingScreen11()),
+        MaterialPageRoute(builder: (context) => const OnboardingScreen11()),
       );
     }
   }
@@ -44,17 +47,17 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               height: 300,
               width: 300,
               child: Image.asset('assets/soma2.png'),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Center(
               child: Text(
                 ' S O M A  A P P ',
                  style: GoogleFonts.poppins(
-                textStyle: TextStyle(
+                textStyle: const TextStyle(
                   fontSize: 25,
                  
                   color: Colors.black,

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:system_auth/themes/theme_provider.dart';
 
 class ThemeToggle extends StatelessWidget {
+  const ThemeToggle({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(

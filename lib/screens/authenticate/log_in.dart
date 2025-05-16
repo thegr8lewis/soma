@@ -10,7 +10,7 @@ import '../../config.dart';
 import '../../trialpages/apply.dart';
 
 class LogIn extends StatefulWidget {
-  const LogIn({Key? key}) : super(key: key);
+  const LogIn({super.key});
 
   @override
   State<LogIn> createState() => _LoginScreenState();
@@ -101,19 +101,21 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
 
       setState(() {
         _isLoading = false;
-      });
-
-      if (response.statusCode == 200) {
+      });      if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Extract the session cookie from the response headers
-        final cookies = response.headers['set-cookie'];
-        if (cookies != null) {
-          _sessionCookie = cookies;
-          await _storage.write(key: 'session_cookie', value: cookies);
+        // Store the JWT token from the Node.js backend
+        final token = data['token'];
+        if (token != null) {
+          await _storage.write(key: 'auth_token', value: token);
         }
 
-        // Always save the session cookie and email, even if remember me is false
+        // Store user data if available
+        if (data['user'] != null) {
+          await _storage.write(key: 'user_data', value: json.encode(data['user']));
+        }
+
+        // Always save the email, even if remember me is false
         await _storage.write(key: 'email', value: email);
         if (_rememberMe) {
           await _storage.write(key: 'remember_me', value: 'true');
@@ -193,9 +195,9 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
 
                     TextField(
                       controller: _emailController,
-                      style: TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.mail_outline, color: Colors.black87),
+                        prefixIcon: const Icon(Icons.mail_outline, color: Colors.black87),
                         hintText: 'Email',
                         hintStyle: const TextStyle(color: Colors.black45),
                         filled: true,
@@ -222,10 +224,10 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                     SizedBox(height: screenHeight * 0.02),
                     TextField(
                       controller: _passwordController,
-                      style: TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Colors.black),
                       obscureText: _obscureText,
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock_outline, color: Colors.black87),
+                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.black87),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureText ? Icons.visibility_outlined : Icons.visibility_off,
@@ -307,6 +309,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
+
+                              
                               padding: EdgeInsets.symmetric(
                                 vertical: screenHeight * 0.010,
                                 horizontal: screenWidth * 0.3,

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../screens/home/activity_tracker.dart';
 
 class NotificationPage extends StatefulWidget {
+  const NotificationPage({super.key});
+
   @override
   _NotificationPageState createState() => _NotificationPageState();
 }
@@ -45,7 +47,7 @@ class _NotificationPageState extends State<NotificationPage> {
               title: Text(
                 'Notifications Page ',
                 style: GoogleFonts.poppins(
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     fontSize: 25,
                     
                     color: Colors.black,

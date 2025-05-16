@@ -12,7 +12,7 @@ class _QuestState extends State<Quest> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFDF7F2),
+      backgroundColor: const Color(0xFFFDF7F2),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -22,7 +22,7 @@ class _QuestState extends State<Quest> {
             Navigator.pop(context); // Navigate back to TopicsPage
           },
         ),
-        actions: [
+        actions: const [
           SizedBox(height: 10,),
           // TextButton(
           //   onPressed: () {
@@ -72,21 +72,21 @@ class _QuestState extends State<Quest> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10,),
+                  const SizedBox(width: 10,),
                   Expanded(
                     child: SizedBox(
                       height: 10,
                       child: LinearProgressIndicator(
                         value: 12 / 20,
                         backgroundColor: Colors.orange[100],
-                        color: Color.fromARGB(255, 15, 160, 27),
-                        valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 15, 160, 27)),
+                        color: const Color.fromARGB(255, 15, 160, 27),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 15, 160, 27)),
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 'If David’s age is 27 years old in 2011. What was his age in 2003?',
                 style: GoogleFonts.poppins(
@@ -97,12 +97,12 @@ class _QuestState extends State<Quest> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _buildOptionCard('19 years', true),
               _buildOptionCard('37 years', false),
               _buildOptionCard('20 years', false),
               _buildOptionCard('17 years', false),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
                   // Handle report question action
@@ -110,7 +110,7 @@ class _QuestState extends State<Quest> {
                 child: Row(
                   children: [
                     Icon(Icons.flag, color: Colors.brown[800]),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Text(
                       'Report question',
                       style: GoogleFonts.poppins(
@@ -132,8 +132,8 @@ class _QuestState extends State<Quest> {
 
   Widget _buildOptionCard(String option, bool isCorrect) {
     return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      padding: EdgeInsets.all(35.0),
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(35.0),
       decoration: BoxDecoration(
         color: isCorrect ? Colors.green : Colors.orange,
         borderRadius: BorderRadius.circular(12.0),
@@ -144,7 +144,7 @@ class _QuestState extends State<Quest> {
           Text(
             option,
             style: GoogleFonts.poppins(
-              textStyle: TextStyle(
+              textStyle: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -152,7 +152,7 @@ class _QuestState extends State<Quest> {
             ),
           ),
           if (isCorrect)
-            Icon(Icons.check_circle, color: Colors.white),
+            const Icon(Icons.check_circle, color: Colors.white),
         ],
       ),
     );

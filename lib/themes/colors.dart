@@ -6,7 +6,7 @@ class AppColors {
   static Color primaryDark500 = Colors.purple.shade500;
   static Color primaryDark800 = Colors.purple.shade800;
   static const Color backgroundDark = Colors.black;
-  static Color scaffoldBackgroundDark = Color.fromARGB(255, 7, 8, 12);
+  static Color scaffoldBackgroundDark = const Color.fromARGB(255, 7, 8, 12);
   static const Color cardDark = Colors.black12;
   static const Color shadowDark = Colors.black;
   static const Color drawerBackgroundDark = Colors.black87;

@@ -6,10 +6,9 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:system_auth/screens/authenticate/log_in.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:system_auth/screens/home/home.dart';
 
 class SignIn extends StatefulWidget {
-  const SignIn({Key? key}) : super(key: key);
+  const SignIn({super.key});
 
   @override
   State<SignIn> createState() => _SignInState();
@@ -240,7 +239,7 @@ class _SignInState extends State<SignIn> {
   }
 
   Widget _buildTitle(double screenHeight) {
-    return Center(
+    return const Center(
       // child: Text(
       //   'Access Education under the dollar',
       //   style: GoogleFonts.poppins(
@@ -270,7 +269,7 @@ class _SignInState extends State<SignIn> {
 
   Widget _buildTextField(double screenHeight, double screenWidth,
       TextEditingController controller, String hintText, IconData icon) {
-    return Container(
+    return SizedBox(
       width: screenWidth * 0.9,
       height: screenHeight * 0.08,
       child: TextField(
@@ -296,7 +295,7 @@ class _SignInState extends State<SignIn> {
   }
 
   Widget _buildPasswordTextField(double screenHeight, double screenWidth) {
-    return Container(
+    return SizedBox(
       width: screenWidth * 0.9,
       height: screenHeight * 0.08,
       child: TextField(
@@ -330,7 +329,7 @@ class _SignInState extends State<SignIn> {
   }
 
   Widget _buildConfirmPasswordTextField(double screenHeight, double screenWidth) {
-    return Container(
+    return SizedBox(
       width: screenWidth * 0.9,
       height: screenHeight * 0.08,
       child: TextField(

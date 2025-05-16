@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:system_auth/screens/home/home.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart'; // Add this line
 import '../../config.dart';
 import '../../trialpages/apply.dart';
@@ -14,7 +13,7 @@ void main() {
 }
 
 class GradePage extends StatefulWidget {
-  const GradePage({Key? key}) : super(key: key);
+  const GradePage({super.key});
 
   @override
   State<GradePage> createState() => _GradePageState();
@@ -28,23 +27,19 @@ class _GradePageState extends State<GradePage> {
   Future<void> sendDataToDatabase(int? grade) async {
     setState(() {
       _isLoading = true;
-    });
-
-    final sessionCookie = await _storage.read(key: 'session_cookie');
+    });    final authToken = await _storage.read(key: 'auth_token');
     final url = Uri.parse('$BASE_URL/grade');
     final headers = <String, String>{
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer $authToken',
     };
 
     try {
-      final sessionCookie = await _storage.read(key: 'session_cookie');
-      if (sessionCookie == null) {
+      if (authToken == null) {
         // Handle not logged in scenario (optional)
         print('User not logged in');
         return;
       }
-
-      headers['Cookie'] = sessionCookie;
 
       var body = jsonEncode({
         'grade': grade,
@@ -170,7 +165,7 @@ class GradeOption extends StatelessWidget {
   final int? currentGrade;
   final ValueChanged<int?> onChanged;
 
-  const GradeOption({
+  const GradeOption({super.key, 
     required this.grade,
     required this.currentGrade,
     required this.onChanged,

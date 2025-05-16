@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Color(0xFFFDF7F2),
+        backgroundColor: const Color(0xFFFDF7F2),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -36,12 +38,12 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildStatSection(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildSectionTitle('Practice More'),
                 _buildDailyQuizCard(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildSectionTitle('Continue Studying'),
                 _buildCourseCard('Math', 'A', 12, Colors.red),
                 _buildCourseCard('History', 'B', 6, Colors.orange),
@@ -51,7 +53,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          items: [
+          items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: '',
@@ -82,7 +84,7 @@ class MyApp extends StatelessWidget {
 
   Widget _buildStatCard(String value, String label, Color color) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.0),
@@ -128,7 +130,7 @@ class MyApp extends StatelessWidget {
 
   Widget _buildDailyQuizCard() {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.green,
         borderRadius: BorderRadius.circular(12.0),
@@ -142,7 +144,7 @@ class MyApp extends StatelessWidget {
               Text(
                 'Daily Quiz',
                 style: GoogleFonts.poppins(
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -152,7 +154,7 @@ class MyApp extends StatelessWidget {
               Text(
                 '20 mixed questions',
                 style: GoogleFonts.poppins(
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     fontSize: 14,
                     color: Colors.white,
                   ),
@@ -163,7 +165,7 @@ class MyApp extends StatelessWidget {
           Text(
             '120 participated',
             style: GoogleFonts.poppins(
-              textStyle: TextStyle(
+              textStyle: const TextStyle(
                 fontSize: 14,
                 color: Colors.white,
               ),
@@ -176,8 +178,8 @@ class MyApp extends StatelessWidget {
 
   Widget _buildCourseCard(String course, String grade, int questionsLeft, Color color) {
     return Container(
-      margin: EdgeInsets.only(top: 10),
-      padding: EdgeInsets.all(16.0),
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.0),
@@ -192,7 +194,7 @@ class MyApp extends StatelessWidget {
                 child: Text(
                   grade,
                   style: GoogleFonts.poppins(
-                    textStyle: TextStyle(
+                    textStyle: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -200,7 +202,7 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

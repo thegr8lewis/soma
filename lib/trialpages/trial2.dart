@@ -52,7 +52,7 @@ class _PamelaState extends State<Pamela> {
       backgroundColor: const Color(0xFFFDF7F2),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xFF6200EE),
+        backgroundColor: const Color(0xFF6200EE),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -72,7 +72,7 @@ class _PamelaState extends State<Pamela> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color.fromARGB(255, 23, 21, 178),
+        selectedItemColor: const Color.fromARGB(255, 23, 21, 178),
         unselectedItemColor: Colors.black,
         onTap: _onItemTapped,
       ),
@@ -81,7 +81,7 @@ class _PamelaState extends State<Pamela> {
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +163,7 @@ class HomeScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Color.fromARGB(255, 76, 171, 225),
+            color: const Color.fromARGB(255, 76, 171, 225),
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Row(
@@ -391,33 +391,33 @@ class HomeScreen extends StatelessWidget {
 }
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Text('Profile Screen'),
     );
   }
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Text('Settings Screen'),
     );
   }
 }
 
 class NotificationsScreen extends StatelessWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Text('Notifications Screen'),
     );
   }
@@ -426,7 +426,7 @@ class NotificationsScreen extends StatelessWidget {
 class SubjectDetailsPage extends StatelessWidget {
   final String subject;
 
-  const SubjectDetailsPage({Key? key, required this.subject}) : super(key: key);
+  const SubjectDetailsPage({super.key, required this.subject});
 
   @override
   Widget build(BuildContext context) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class IntroPage1 extends StatelessWidget {
+  const IntroPage1({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -9,7 +11,7 @@ class IntroPage1 extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -19,13 +21,13 @@ class IntroPage1 extends StatelessWidget {
                   width: 200,
                   height: 200,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // Title
                 Center(
                   child: Text(
                     'Hello Smartypants and welcome to Soma App',
                     style: GoogleFonts.poppins(
-                    textStyle: TextStyle(
+                    textStyle: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -33,19 +35,19 @@ class IntroPage1 extends StatelessWidget {
                   ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // Subtitle
                 Text(
                   'Unlock the world of knowledge and excel in your studies with Soma App',
                  style: GoogleFonts.poppins(
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     fontSize: 20,
 
                     color: Colors.black,
                   ),
                 ),
                 ),
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 // Description
                 // Text(
                 //   'Organize your tasks, track your goals, and manage your meals with ease.',

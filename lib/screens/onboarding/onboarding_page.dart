@@ -13,6 +13,8 @@ import 'package:system_auth/screens/onboarding/info/intro_5.dart';
 import 'package:system_auth/themes/theme_toggle.dart';
 
 class OnboardingPage extends StatefulWidget {
+  const OnboardingPage({super.key});
+
   @override
   _OnboardingPageState createState() => _OnboardingPageState();
 }
@@ -41,12 +43,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
     return Scaffold(
       body: Stack(
         children: [
-          AuthPageDecoration(),
+          const AuthPageDecoration(),
           Align(
-            alignment: Alignment(0, -0.6),
+            alignment: const Alignment(0, -0.6),
             child: PageView(
               controller: _pageController,
-              children: [
+              children: const [
                 IntroPage1(),
                 IntroPage2(),
                 IntroPage3(),
@@ -60,8 +62,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              padding: EdgeInsets.only(bottom: 40.0),
-              constraints: BoxConstraints(maxWidth: 500),
+              padding: const EdgeInsets.only(bottom: 40.0),
+              constraints: const BoxConstraints(maxWidth: 500),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -70,21 +72,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     valueListenable: _currentPageIndex,
                     builder: (context, value, child) {
                       return AuthButtonSecondary(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 30.0, vertical: 0.0),
                         onPressed: () {
                           if (value == 4) {
                             // If on the last page, navigate to the first page
                             _pageController.animateToPage(
                               0, // Navigate to the first page
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                             );
                           } else {
                             // If not on the last page, navigate to the last page
                             _pageController.animateToPage(
                               4, // Navigate to the last page
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                             );
                           }
@@ -97,7 +99,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   SmoothPageIndicator(
                       controller: _pageController,
                       count: 5,
-                      effect: ExpandingDotsEffect(
+                      effect: const ExpandingDotsEffect(
                         dotColor: Colors.grey,
                         activeDotColor: Colors.black,
                         dotHeight: 12,
@@ -111,7 +113,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     valueListenable: _currentPageIndex,
                     builder: (context, value, child) {
                       return AuthButtonPrimary(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 30.0, vertical: 0.0),
                         onPressed: () {
                           if (value == 4) {
@@ -120,11 +122,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => LogIn()),
+                                  builder: (context) => const LogIn()),
                             );
                           } else {
                             _pageController.nextPage(
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                             );
                           }
@@ -137,7 +139,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ),
             ),
           ),
-          Positioned(
+          const Positioned(
             top: 40.0,
             left: 20.0,
             child: ThemeToggle(),
@@ -149,11 +151,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class AuthPageDecoration extends StatelessWidget {
+  const AuthPageDecoration({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Container(
+        const SizedBox(
           width: double.infinity,
           height: double.infinity,
           // decoration: BoxDecoration(

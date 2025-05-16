@@ -162,15 +162,15 @@ class _ForgotPassState extends State<ForgotPass> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.05),
-                  Container(
+                  SizedBox(
                     width: screenWidth * 0.9,
                     height: screenHeight * 0.08,
                     child: TextField(
                       controller: _emailController,
-                      style: TextStyle(color: Colors.black),
+                      style: const TextStyle(color: Colors.black),
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.email, color: Colors.grey),
+                        prefixIcon: const Icon(Icons.email, color: Colors.grey),
                         hintText: 'Email',
                         hintStyle: const TextStyle(color: Colors.white),
                         border: OutlineInputBorder(
