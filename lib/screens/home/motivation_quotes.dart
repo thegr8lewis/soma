@@ -4,15 +4,16 @@ import 'package:lottie/lottie.dart';
 import 'dart:math';
 
 class MotivationQuotesPage extends StatefulWidget {
-  final VoidCallback onContinue;
+  final VoidCallback? onContinue;
 
-  const MotivationQuotesPage({super.key, required this.onContinue});
+  const MotivationQuotesPage({super.key, this.onContinue});
 
   @override
   State<MotivationQuotesPage> createState() => _MotivationQuotesPageState();
 }
 
-class _MotivationQuotesPageState extends State<MotivationQuotesPage> with SingleTickerProviderStateMixin {
+class _MotivationQuotesPageState extends State<MotivationQuotesPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   final Random _random = Random();
   late String _quote;
@@ -44,7 +45,7 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
   ];
   // List of animation assets that are verified to exist in the assets folder
   final List<String> _animations = [
-    'assets/confetti.json',  // Keep only animations we're sure exist
+    'assets/confetti.json', // Keep only animations we're sure exist
     'assets/jumps.json',
     'assets/panda.json',
     'assets/caterpillar.json',
@@ -81,7 +82,7 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
       duration: const Duration(milliseconds: 2000),
     );
     _animationController.forward();
-    
+
     // Select a random quote and color pair
     _quote = _quotes[_random.nextInt(_quotes.length)];
     final colorPair = _colorPairs[_random.nextInt(_colorPairs.length)];
@@ -109,7 +110,8 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [              SizedBox(
+            children: [
+              SizedBox(
                 height: 200,
                 width: 200,
                 child: Builder(
@@ -117,11 +119,12 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
                     try {
                       if (_randomAnimation.endsWith('.json')) {
                         return Lottie.asset(
-                          _randomAnimation, 
+                          _randomAnimation,
                           repeat: true,
                           errorBuilder: (context, error, stackTrace) {
                             debugPrint('Error loading animation: $error');
-                            return const Icon(Icons.star, size: 100, color: Colors.amber);
+                            return const Icon(Icons.star,
+                                size: 100, color: Colors.amber);
                           },
                         );
                       } else {
@@ -129,13 +132,15 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
                           _randomAnimation,
                           errorBuilder: (context, error, stackTrace) {
                             debugPrint('Error loading image: $error');
-                            return const Icon(Icons.emoji_events, size: 100, color: Colors.amber);
+                            return const Icon(Icons.emoji_events,
+                                size: 100, color: Colors.amber);
                           },
                         );
                       }
                     } catch (e) {
                       debugPrint('Animation error: $e');
-                      return const Icon(Icons.celebration, size: 100, color: Colors.amber);
+                      return const Icon(Icons.celebration,
+                          size: 100, color: Colors.amber);
                     }
                   },
                 ),
@@ -185,7 +190,7 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
                 ),
               ),
               const SizedBox(height: 50),
-              _buildContinueButton(),
+              // Remove the continue button - will auto-close after 4 seconds
             ],
           ),
         ),
@@ -193,44 +198,5 @@ class _MotivationQuotesPageState extends State<MotivationQuotesPage> with Single
     );
   }
 
-  Widget _buildContinueButton() {
-    return GestureDetector(
-      onTap: widget.onContinue,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-        decoration: BoxDecoration(
-          color: _textColor,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "CONTINUE",
-              style: GoogleFonts.poppins(
-                textStyle: TextStyle(
-                  color: _textColor == Colors.black ? Colors.white : Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: _textColor == Colors.black ? Colors.white : Colors.black,
-              size: 24,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Remove the _buildContinueButton method since we no longer need it
 }

@@ -1,0 +1,46 @@
+
+
+gradle.taskGraph.beforeTask { task ->
+    if (task.name.contains('compileReleaseJavaWithJavac') && 
+        task.project.name.contains('connectivity_plus')) {
+        
+        println ">>> DISABLING CONNECTIVITY_PLUS COMPILE TASK: ${task.name}"
+        task.enabled = false
+    }
+}
+
+// Override jlink.exe path for all Java compilation tasks
+allprojects {
+    tasks.withType(JavaCompile) { task ->
+        task.options.fork = true
+        task.options.forkOptions.javaHome = file("C:\\Program Files\\Java\\jdk-17")
+    }
+      // Prepare for jlink execution
+    tasks.configureEach { task ->
+        task.doFirst {
+            // Only proceed if task has the commandLine property
+            if (task.hasProperty('commandLine') && task.commandLine != null) {
+                def cmdLine = task.commandLine.join(' ') 
+                if (cmdLine.contains('jlink.exe')) {
+                    println ">>> DETECTED JLINK COMMAND: ${cmdLine}"
+                    
+                    def javaHome = "C:\\Program Files\\Java\\jdk-17"
+                    def newJlinkPath = "${javaHome}\\bin\\jlink.exe"
+                    
+                    def newCmdLine = []
+                    for (arg in task.commandLine) {
+                        if (arg.toString().endsWith('jlink.exe')) {
+                            println ">>> REPLACING JLINK PATH: ${arg} → ${newJlinkPath}"
+                            newCmdLine.add(newJlinkPath)
+                        } else {
+                            newCmdLine.add(arg)
+                        }
+                    }
+                    
+                    task.commandLine = newCmdLine
+                    println ">>> UPDATED COMMAND: ${task.commandLine.join(' ')}"
+                }
+            }
+        }
+    }
+}

@@ -39,6 +39,7 @@ class _PamelaState extends State<Homepage> {
     _fetchUserData();
     _fetchPoints();
   }
+
   Future<void> _fetchUserData() async {
     try {
       final authToken = await _storage.read(key: 'auth_token');
@@ -58,8 +59,11 @@ class _PamelaState extends State<Homepage> {
         final data = jsonDecode(response.body);
         final username = data['username'] as String;
         setState(() {
-          _firstName = username.split(' ')[0]; // Get the first name from the username
-          _initials = _firstName!.substring(0, 2).toUpperCase(); // Get the first two letters of the first name
+          _firstName =
+              username.split(' ')[0]; // Get the first name from the username
+          _initials = _firstName!
+              .substring(0, 2)
+              .toUpperCase(); // Get the first two letters of the first name
         });
       } else {
         print('Failed to load user data. Status code: ${response.statusCode}');
@@ -73,14 +77,33 @@ class _PamelaState extends State<Homepage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _pointsNotifier.value = prefs.getInt('total_score') ?? 0;
   }
-
   Future<void> _refreshData() async {
-    // Fetch the latest points and subjects
-    await _fetchPoints();
+    // Show loading state
     setState(() {
-      _subjectsFuture = _fetchSubjects();
+      isLoading = true;
+      errorMessage = '';
     });
-  }  Future<List<Subject>> _fetchSubjects() async {
+    
+    try {
+      // Fetch the latest points and subjects
+      await _fetchPoints();
+      await _fetchUserData();
+      
+      // Create a new future for subjects to trigger UI update
+      setState(() {
+        _subjectsFuture = _fetchSubjects();
+      });
+    } catch (e) {
+      // Handle errors during refresh
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error refreshing data: $e';
+      });
+      print('Error during refresh: $e');
+    }
+  }
+
+  Future<List<Subject>> _fetchSubjects() async {
     try {
       final authToken = await _storage.read(key: 'auth_token');
       if (authToken == null) {
@@ -91,8 +114,9 @@ class _PamelaState extends State<Homepage> {
         throw Exception('No authentication token found. Please log in again.');
       }
 
-      print('Fetching subjects with token: ${authToken.substring(0, min(10, authToken.length))}...');
-      
+      print(
+          'Fetching subjects with token: ${authToken.substring(0, min(10, authToken.length))}...');
+
       final response = await http.get(
         Uri.parse('$BASE_URL/subjects'),
         headers: {
@@ -103,24 +127,25 @@ class _PamelaState extends State<Homepage> {
 
       print('Subjects API response code: ${response.statusCode}');
       print('Subjects API URL: $BASE_URL/subjects');
-      
+
       if (response.statusCode == 200) {
         // Log the raw response first for debugging
         String rawResponse = response.body;
         print('Raw subjects response: $rawResponse');
-        
+
         // Try to detect if the response is a JSON object rather than an array
         if (rawResponse.trim().startsWith('{')) {
           print('Response appears to be a JSON object, not an array');
           Map<String, dynamic> jsonObj = json.decode(rawResponse);
           _logResponseData('Parsed JSON object:', jsonObj);
-          
+
           // Check if the object has a data field that contains the subjects array
           if (jsonObj.containsKey('data') && jsonObj['data'] is List) {
             print('Found subjects in the data field');
             List<dynamic> body = jsonObj['data'];
             return _processSubjectsList(body, authToken);
-          } else if (jsonObj.containsKey('subjects') && jsonObj['subjects'] is List) {
+          } else if (jsonObj.containsKey('subjects') &&
+              jsonObj['subjects'] is List) {
             print('Found subjects in the subjects field');
             List<dynamic> body = jsonObj['subjects'];
             return _processSubjectsList(body, authToken);
@@ -133,9 +158,10 @@ class _PamelaState extends State<Homepage> {
                 return _processSubjectsList(body, authToken);
               }
             }
-            
+
             // If we can't find a list, just convert the object to a single-item list
-            print('No arrays found, treating the entire object as a single subject');
+            print(
+                'No arrays found, treating the entire object as a single subject');
             return _processSubjectsList([jsonObj], authToken);
           }
         } else {
@@ -180,10 +206,11 @@ class _PamelaState extends State<Homepage> {
       return [];
     }
   }
-  
-  Future<List<Subject>> _processSubjectsList(List<dynamic> body, String authToken) async {
+
+  Future<List<Subject>> _processSubjectsList(
+      List<dynamic> body, String authToken) async {
     _logResponseData('Processing subjects data:', body);
-    
+
     if (body.isEmpty) {
       print('No subjects found in response');
       setState(() {
@@ -191,13 +218,14 @@ class _PamelaState extends State<Homepage> {
       });
       return [];
     }
-    
+
     List<Subject> subjects = [];
     for (var item in body) {
       try {
         if (item is Map<String, dynamic>) {
           Subject subject = Subject.fromJson(item);
-          print('Successfully parsed subject: ${subject.name} (ID: ${subject.id})');
+          print(
+              'Successfully parsed subject: ${subject.name} (ID: ${subject.id})');
           subjects.add(subject);
         } else {
           print('Skipping non-map item in subjects array: $item');
@@ -207,14 +235,14 @@ class _PamelaState extends State<Homepage> {
         print('Problem data: $item');
       }
     }
-    
-  // Fetch topic counts for each subject in parallel with better error handling
+
+    // Fetch topic counts for each subject in parallel with better error handling
     await Future.wait(subjects.map((subject) async {
       try {
         // Use mongoId instead of numeric id for API calls
         String url = '$BASE_URL/${subject.mongoId}/topics';
         print('Fetching topics from: $url');
-        
+
         final topicsResponse = await http.get(
           Uri.parse(url),
           headers: {
@@ -223,26 +251,31 @@ class _PamelaState extends State<Homepage> {
           },
         );
 
-        print('Topics API response for subject ${subject.name} (ID: ${subject.mongoId}): ${topicsResponse.statusCode}');
-        
+        print(
+            'Topics API response for subject ${subject.name} (ID: ${subject.mongoId}): ${topicsResponse.statusCode}');
+
         if (topicsResponse.statusCode == 200) {
           String rawResponse = topicsResponse.body;
-          print('Raw topics response for subject ${subject.name} (first 100 chars): ${rawResponse.substring(0, min(100, rawResponse.length))}...');
-          
+          print(
+              'Raw topics response for subject ${subject.name} (first 100 chars): ${rawResponse.substring(0, min(100, rawResponse.length))}...');
+
           try {
             List<dynamic> topicsBody = json.decode(rawResponse);
             subject.topicCount = topicsBody.length;
-            print('Subject ${subject.name} (ID: ${subject.mongoId}) has ${subject.topicCount} topics');
+            print(
+                'Subject ${subject.name} (ID: ${subject.mongoId}) has ${subject.topicCount} topics');
           } catch (e) {
             print('Error parsing topics response: $e');
             subject.topicCount = 0;
           }
         } else {
-          print('Failed to load topics for subject ${subject.name} (ID: ${subject.mongoId}): Status ${topicsResponse.statusCode}');
+          print(
+              'Failed to load topics for subject ${subject.name} (ID: ${subject.mongoId}): Status ${topicsResponse.statusCode}');
           subject.topicCount = 0;
         }
       } catch (e) {
-        print('Error fetching topics for subject ${subject.name} (ID: ${subject.mongoId}): $e');
+        print(
+            'Error fetching topics for subject ${subject.name} (ID: ${subject.mongoId}): $e');
         subject.topicCount = 0;
       }
     }));
@@ -250,7 +283,7 @@ class _PamelaState extends State<Homepage> {
     setState(() {
       isLoading = false;
     });
-    
+
     print('Returning ${subjects.length} subjects');
     return subjects;
   }
@@ -285,7 +318,8 @@ class _PamelaState extends State<Homepage> {
   }
 
   @override
-  Widget build(BuildContext context) {    return Scaffold(
+  Widget build(BuildContext context) {
+    return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: IndexedStack(
         index: _selectedIndex,
@@ -295,14 +329,16 @@ class _PamelaState extends State<Homepage> {
             firstName: _firstName,
             initials: _initials,
             pointsNotifier: _pointsNotifier,
-            onPointsChanged: _fetchPoints, // Callback to fetch points when they change
+            onPointsChanged:
+                _fetchPoints, // Callback to fetch points when they change
             onRefresh: _refreshData, // Callback to refresh data
             isLoading: isLoading,
             errorMessage: errorMessage,
           ),
           const ProfilePage(),
         ],
-      ),      bottomNavigationBar: Container(
+      ),
+      bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           boxShadow: [
             BoxShadow(
@@ -322,7 +358,7 @@ class _PamelaState extends State<Homepage> {
                 icon: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: _selectedIndex == 0 
+                    color: _selectedIndex == 0
                         ? const Color(0xFF3F51B5).withOpacity(0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -335,7 +371,7 @@ class _PamelaState extends State<Homepage> {
                 icon: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: _selectedIndex == 1 
+                    color: _selectedIndex == 1
                         ? const Color(0xFF3F51B5).withOpacity(0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -385,7 +421,7 @@ class HomeScreen extends StatelessWidget {
       [const Color(0xFF2196F3), const Color(0xFF64B5F6)], // Blue
       [const Color(0xFFE91E63), const Color(0xFFF48FB1)], // Pink
     ];
-    
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -397,7 +433,8 @@ class HomeScreen extends StatelessWidget {
       ),
       itemCount: 8, // Number of skeleton cards to display
       itemBuilder: (context, index) {
-        final gradientColors = skeletonGradients[index % skeletonGradients.length];
+        final gradientColors =
+            skeletonGradients[index % skeletonGradients.length];
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -488,9 +525,17 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: onRefresh,
+      color: const Color(0xFF3F51B5), // Indigo color that matches app theme
+      backgroundColor: Colors.white,
+      strokeWidth: 3.0, // Slightly thicker stroke for better visibility
+      displacement: 40.0, // More space at the top for the indicator
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(), // Ensure the scroll physics allows pull-to-refresh
+        physics: const AlwaysScrollableScrollPhysics(), // Ensure scrolling works for pull-to-refresh
         child: Container(
+          // Ensure the container is tall enough to allow pulling when content is short
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - 100, // Adjust as needed
+          ),
           decoration: const BoxDecoration(
             // Create a colorful gradient background for kid appeal
             gradient: LinearGradient(
@@ -648,7 +693,8 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(16),
@@ -680,20 +726,23 @@ class HomeScreen extends StatelessWidget {
           // Add a fun animation of stars or confetti based on points
           SizedBox(
             height: 20,
-            child: points > 0 
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(
-                    min(5, (points / 20).ceil()), // Show stars based on points
-                    (index) => const Icon(Icons.star, color: Colors.amber, size: 20),
-                  ),
-                )
-              : Container(),
+            child: points > 0
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(
+                      min(5,
+                          (points / 20).ceil()), // Show stars based on points
+                      (index) =>
+                          const Icon(Icons.star, color: Colors.amber, size: 20),
+                    ),
+                  )
+                : Container(),
           ),
         ],
       ),
     );
   }
+
   Widget _buildCourseSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -731,7 +780,8 @@ class HomeScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const DailyQuizScreen()),
-        ).then((_) => onPointsChanged()); // Callback to update points after returning
+        ).then((_) =>
+            onPointsChanged()); // Callback to update points after returning
       },
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -793,7 +843,8 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 15),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(20),
@@ -834,13 +885,16 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }Widget _buildSubjectsSection(BuildContext context) {
+  }
+
+  Widget _buildSubjectsSection(BuildContext context) {
     return FutureBuilder<List<Subject>>(
       future: subjectsFuture,
       builder: (context, snapshot) {
         if (isLoading) {
           return SizedBox(
-            height: MediaQuery.of(context).size.height - 200, // Adjust the height as needed
+            height: MediaQuery.of(context).size.height -
+                200, // Adjust the height as needed
             child: _buildSkeletonLoader(),
           );
         } else if (snapshot.connectionState == ConnectionState.waiting) {
@@ -909,16 +963,18 @@ class HomeScreen extends StatelessWidget {
         }
       },
     );
-  }  Widget _buildSubjectsList(List<Subject> subjects, BuildContext context) {
+  }
+
+  Widget _buildSubjectsList(List<Subject> subjects, BuildContext context) {
     if (subjects.isEmpty) {
       return const Center(
         child: Text("No subjects available"),
       );
     }
-    
+
     // Sort subjects by name
     subjects.sort((a, b) => a.name.compareTo(b.name));
-    
+
     // Define subject colors list for variety
     final List<List<Color>> subjectGradients = [
       [const Color(0xFFFF9800), const Color(0xFFFFB74D)], // Orange
@@ -928,7 +984,7 @@ class HomeScreen extends StatelessWidget {
       [const Color(0xFF00BCD4), const Color(0xFF4DD0E1)], // Cyan
       [const Color(0xFF009688), const Color(0xFF4DB6AC)], // Teal
     ];
-    
+
     // Generate subject icons for each subject
     final List<IconData> subjectIcons = [
       Icons.science_rounded,
@@ -938,7 +994,7 @@ class HomeScreen extends StatelessWidget {
       Icons.history_edu_rounded,
       Icons.psychology_rounded,
     ];
-    
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -951,12 +1007,14 @@ class HomeScreen extends StatelessWidget {
       itemCount: subjects.length,
       itemBuilder: (context, index) {
         final subject = subjects[index];
-        final gradientColors = subjectGradients[index % subjectGradients.length];
+        final gradientColors =
+            subjectGradients[index % subjectGradients.length];
         final iconData = subjectIcons[index % subjectIcons.length];
-        
+
         // Debug print for each subject being rendered
-        print('Rendering subject: ${subject.name} (ID: ${subject.id}) with ${subject.topicCount} topics');
-        
+        print(
+            'Rendering subject: ${subject.name} (ID: ${subject.id}) with ${subject.topicCount} topics');
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -969,7 +1027,8 @@ class HomeScreen extends StatelessWidget {
                   subject_name: '',
                 ),
               ),
-            ).then((_) => onPointsChanged()); // Callback to update points after returning
+            ).then((_) =>
+                onPointsChanged()); // Callback to update points after returning
           },
           child: Container(
             decoration: BoxDecoration(
@@ -1013,7 +1072,8 @@ class HomeScreen extends StatelessWidget {
                           ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(10),
@@ -1045,7 +1105,8 @@ class HomeScreen extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (subject.description != null && subject.description!.isNotEmpty)
+                      if (subject.description != null &&
+                          subject.description!.isNotEmpty)
                         Text(
                           subject.description!,
                           style: GoogleFonts.fredoka(
@@ -1060,7 +1121,8 @@ class HomeScreen extends StatelessWidget {
                       // Start learning button
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -1100,26 +1162,26 @@ class HomeScreen extends StatelessWidget {
 }
 
 class Subject {
-  final String name;  // Changed from nullable to non-nullable with defaults
+  final String name; // Changed from nullable to non-nullable with defaults
   final String? description;
-  final int id;       // For internal use
+  final int id; // For internal use
   final String mongoId; // Added to store the original MongoDB ID string
   final int grade;
   int topicCount;
 
-  Subject({
-    String? name,
-    this.description, 
-    required this.id, 
-    required this.mongoId,
-    required this.grade, 
-    this.topicCount = 0
-  }) : name = name ?? 'Subject $id';  // Default name if none provided
+  Subject(
+      {String? name,
+      this.description,
+      required this.id,
+      required this.mongoId,
+      required this.grade,
+      this.topicCount = 0})
+      : name = name ?? 'Subject $id'; // Default name if none provided
 
   factory Subject.fromJson(Map<String, dynamic> json) {
     // Debug the json data
     print('Parsing subject JSON: $json');
-    
+
     // Store the original MongoDB ID as a string for API calls
     String mongoId = '';
     if (json.containsKey('id')) {
@@ -1133,7 +1195,7 @@ class Subject {
       print('Warning: JSON missing "id" field');
       mongoId = '0';
     }
-    
+
     // Generate a numeric ID for internal use
     int subjectId;
     if (json.containsKey('numeric_id')) {
@@ -1142,7 +1204,8 @@ class Subject {
       } else if (json['numeric_id'] is String) {
         subjectId = int.tryParse(json['numeric_id']) ?? 0;
       } else {
-        print('Warning: Subject ID has unexpected type: ${json['numeric_id']} (${json['numeric_id'].runtimeType})');
+        print(
+            'Warning: Subject ID has unexpected type: ${json['numeric_id']} (${json['numeric_id'].runtimeType})');
         subjectId = 0;
       }
     } else {
@@ -1150,7 +1213,7 @@ class Subject {
       subjectId = mongoId.hashCode.abs();
       print('Generated internal ID $subjectId from MongoDB ID $mongoId');
     }
-    
+
     // Handle different formats of grade (could be string, int, or missing)
     int gradeLevel;
     if (json.containsKey('grade')) {
@@ -1159,39 +1222,42 @@ class Subject {
       } else if (json['grade'] is int) {
         gradeLevel = json['grade'];
       } else {
-        print('Warning: Grade has unexpected type: ${json['grade']} (${json['grade'].runtimeType})');
+        print(
+            'Warning: Grade has unexpected type: ${json['grade']} (${json['grade'].runtimeType})');
         gradeLevel = 0;
       }
     } else {
       print('Warning: JSON missing "grade" field');
       gradeLevel = 0;
     }
-    
+
     // Handle subject name (could be string, other type, or missing)
     String? name;
     if (json.containsKey('name')) {
       if (json['name'] is String) {
         name = json['name'];
       } else {
-        print('Warning: Subject name has unexpected type: ${json['name']} (${json['name'].runtimeType})');
+        print(
+            'Warning: Subject name has unexpected type: ${json['name']} (${json['name'].runtimeType})');
         name = 'Subject $subjectId';
       }
     } else {
       print('Warning: JSON missing "name" field');
       name = 'Subject $subjectId';
     }
-    
+
     // Handle description (could be string, other type, or missing)
     String? description;
     if (json.containsKey('description')) {
       if (json['description'] is String) {
         description = json['description'];
       } else if (json['description'] != null) {
-        print('Warning: Description has unexpected type: ${json['description']} (${json['description'].runtimeType})');
+        print(
+            'Warning: Description has unexpected type: ${json['description']} (${json['description'].runtimeType})');
         description = null;
       }
     }
-    
+
     return Subject(
       name: name,
       description: description,

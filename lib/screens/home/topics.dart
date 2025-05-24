@@ -613,23 +613,24 @@ class _TopicsPageState extends State<TopicsPage> {
                                   ),
                                 ),
                               ),
-                              trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE8EAF6), // Light indigo background
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  '${topic['total_questions'] ?? 0} Q', // Display total questions
-                                  style: GoogleFonts.poppins(
-                                    textStyle: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xFF3F51B5), // Matching indigo color
-                                    ),
-                                  ),
-                                ),
-                              ),onTap: () {                                Navigator.push(
+                              // trailing: Container(
+                              //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              //   decoration: BoxDecoration(
+                              //     color: const Color(0xFFE8EAF6), // Light indigo background
+                              //     borderRadius: BorderRadius.circular(20),
+                              //   ),
+                              //   child: Text(
+                              //     '${topic['total_questions'] ?? 0} Q', // Display total questions
+                              //     style: GoogleFonts.poppins(
+                              //       textStyle: const TextStyle(
+                              //         fontSize: 14,
+                              //         fontWeight: FontWeight.w500,
+                              //         color: Color(0xFF3F51B5), // Matching indigo color
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
+                              onTap: () {                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => QuestionsPage(

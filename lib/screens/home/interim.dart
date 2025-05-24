@@ -12,7 +12,7 @@ class InterimResultsPage extends StatelessWidget {
   final int totalQuestions;
 
   const InterimResultsPage({
-    super.key, 
+    super.key,
     required this.score,
     required this.wrongQuestions,
     required this.batchNumber,
@@ -22,21 +22,18 @@ class InterimResultsPage extends StatelessWidget {
 
   double calculatePercentage() {
     if (batchNumber == 0) return 0;
-    return (score / (batchNumber * 100)) * 100;
+    // Calculate raw percentage based on score and questions attempted
+    double rawPercentage = (score / (batchNumber * 10)) * 100;
+    // Ensure percentage doesn't exceed 100%
+    return rawPercentage > 100 ? 100 : rawPercentage;
   }
 
   @override
   Widget build(BuildContext context) {
     final percentage = calculatePercentage();
-    final bool hasMoreQuestions = batchNumber * 10 < totalQuestions || wrongQuestions.isNotEmpty;
-    final String progressMessage = percentage >= 80 
-      ? 'Excellent Progress!' 
-      : percentage >= 60 
-        ? 'Good Progress!' 
-        : percentage >= 40 
-          ? 'Nice Effort!' 
-          : 'Keep Going!';
-          
+    final bool hasMoreQuestions =
+        batchNumber * 10 < totalQuestions || wrongQuestions.isNotEmpty;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -50,14 +47,13 @@ class InterimResultsPage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+          child: Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Animation and title section
+                  // Animation section
                   Stack(
                     alignment: Alignment.center,
                     children: [
@@ -77,43 +73,15 @@ class InterimResultsPage extends StatelessWidget {
                         ),
                       ),
                       Lottie.asset(
-                        'assets/loader.json', // Use a progress or ongoing animation
+                        'assets/loader.json',
                         repeat: true,
                         width: 220,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo.shade400,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Text(
-                      'Batch $batchNumber Results',
-                      style: GoogleFonts.fredoka(
-                        textStyle: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    progressMessage,
-                    style: GoogleFonts.fredoka(
-                      textStyle: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF3F51B5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  // Score container
+                  const SizedBox(height: 40),
+
+                  // Percentage display
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -129,110 +97,83 @@ class InterimResultsPage extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Current Score:',
-                              style: GoogleFonts.fredoka(
-                                textStyle: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: percentage >= 80 
-                                    ? [const Color(0xFF4CAF50), const Color(0xFF8BC34A)] // Green gradient for high scores
-                                    : percentage >= 60 
-                                      ? [const Color(0xFF8BC34A), const Color(0xFFCDDC39)] // Light green for good scores
-                                      : percentage >= 40 
-                                        ? [const Color(0xFFFFC107), const Color(0xFFFFEB3B)] // Yellow for average
-                                        : [const Color(0xFFFF9800), const Color(0xFFFFEB3B)], // Orange for low scores
-                                ),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Text(
-                                '$score pts',
-                                style: GoogleFonts.fredoka(
-                                  textStyle: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        buildScoreRow('Batch Progress', '$batchNumber / ${(totalQuestions / 10).ceil()}', Colors.indigo.shade100),
-                        const SizedBox(height: 8),
-                        buildScoreRow('Questions Remaining', '${totalQuestions - (batchNumber * 10) > 0 ? totalQuestions - (batchNumber * 10) : 0}', Colors.blue.shade100),
-                        const SizedBox(height: 8),
-                        buildScoreRow('Wrong Answers', '${wrongQuestions.length}', 
-                          wrongQuestions.isEmpty ? Colors.green.shade100 : Colors.amber.shade100),
-                      ],
-                    ),
-                  ),
-                  
-                  // Progress visualization
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
                         Text(
-                          'Your Progress',
+                          'Your Score',
                           style: GoogleFonts.fredoka(
                             textStyle: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF3F51B5),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: LinearProgressIndicator(
-                            value: batchNumber * 10 / totalQuestions,
-                            backgroundColor: Colors.grey.shade200,
-                            color: determineProgressColor(percentage),
-                            minHeight: 15,
+                        const SizedBox(height: 15),
+                        Container(
+                          width: 150,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: percentage >= 80
+                                  ? [
+                                      const Color(0xFF4CAF50),
+                                      const Color(0xFF8BC34A)
+                                    ] // Green gradient for high scores
+                                  : percentage >= 60
+                                      ? [
+                                          const Color(0xFF8BC34A),
+                                          const Color(0xFFCDDC39)
+                                        ] // Light green for good scores
+                                      : percentage >= 40
+                                          ? [
+                                              const Color(0xFFFFC107),
+                                              const Color(0xFFFFEB3B)
+                                            ] // Yellow for average
+                                          : [
+                                              const Color(0xFFFF9800),
+                                              const Color(0xFFFFEB3B)
+                                            ], // Orange for low scores
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${percentage.toStringAsFixed(0)}%',
+                              style: GoogleFonts.fredoka(
+                                textStyle: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 20),
                         Text(
-                          '${(batchNumber * 10 / totalQuestions * 100).toStringAsFixed(0)}% Complete',
+                          '$score pts',
                           style: GoogleFonts.fredoka(
-                            textStyle: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade800,
-                              fontWeight: FontWeight.w500,
+                            textStyle: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF3F51B5),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
+                  const Spacer(),
                   // Action buttons
                   const SizedBox(height: 30),
                   Row(
@@ -286,12 +227,15 @@ class InterimResultsPage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                           icon: Icon(
-                            batchNumber * 10 >= totalQuestions && wrongQuestions.isNotEmpty 
-                                ? Icons.refresh : Icons.arrow_forward,
+                            batchNumber * 10 >= totalQuestions &&
+                                    wrongQuestions.isNotEmpty
+                                ? Icons.refresh
+                                : Icons.arrow_forward,
                           ),
                           label: Text(
-                            batchNumber * 10 >= totalQuestions && wrongQuestions.isNotEmpty 
-                                ? 'Review Wrong Answers' 
+                            batchNumber * 10 >= totalQuestions &&
+                                    wrongQuestions.isNotEmpty
+                                ? 'Review Wrong Answers'
                                 : 'Continue Learning',
                             style: GoogleFonts.fredoka(
                               textStyle: const TextStyle(
@@ -304,52 +248,6 @@ class InterimResultsPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
-                  // If we have wrong questions, show some details
-                  if (wrongQuestions.isNotEmpty) ...[
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.red.shade200, width: 1),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.red.shade400),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Review These Questions',
-                                style: GoogleFonts.fredoka(
-                                  textStyle: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red.shade800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'You\'ll see ${wrongQuestions.length} question(s) you missed in the next batch.',
-                            style: GoogleFonts.fredoka(
-                              textStyle: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  
-                  // Add bottom padding
                   const SizedBox(height: 20),
                 ],
               ),
@@ -365,40 +263,5 @@ class InterimResultsPage extends StatelessWidget {
     if (percentage >= 60) return Colors.lightGreen;
     if (percentage >= 40) return Colors.amber;
     return Colors.orange;
-  }
-  
-  Widget buildScoreRow(String label, String value, Color bgColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.fredoka(
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.fredoka(
-              textStyle: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3F51B5),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

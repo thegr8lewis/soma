@@ -18,9 +18,11 @@ class _SignInState extends State<SignIn> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  final _storage = const FlutterSecureStorage(); // Initialize the secure storage
+  final _storage =
+      const FlutterSecureStorage(); // Initialize the secure storage
 
   bool _obscureText = true;
   bool _isSignUpButtonEnabled = false;
@@ -84,7 +86,8 @@ class _SignInState extends State<SignIn> {
           context,
           MaterialPageRoute(builder: (context) => const LogIn()),
         );
-      } else if (response.statusCode == 409) { // Assuming 409 is the status code for email already exists
+      } else if (response.statusCode == 409) {
+        // Assuming 409 is the status code for email already exists
         setState(() {
           _emailExists = true;
           _errorMessage = 'The email already exists';
@@ -142,9 +145,44 @@ class _SignInState extends State<SignIn> {
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        color: Colors.white,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF81C784),
+              Color(0xFF4CAF50),
+              Color(0xFF2E7D32),
+            ],
+          ),
+        ),
         child: Stack(
           children: [
+            // Decorative elements
+            Positioned(
+              top: -50,
+              right: -50,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.1),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 100,
+              left: -30,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.05),
+                ),
+              ),
+            ),
             SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -154,7 +192,7 @@ class _SignInState extends State<SignIn> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: screenHeight * 0.07),
+                    SizedBox(height: screenHeight * 0.05),
                     _buildLogo(screenHeight, screenWidth),
                     SizedBox(height: screenHeight * 0.03),
                     _buildTitle(screenHeight),
@@ -181,40 +219,16 @@ class _SignInState extends State<SignIn> {
                     SizedBox(height: screenHeight * 0.012),
                     _buildConfirmPasswordTextField(screenHeight, screenWidth),
                     if (_confirmPasswordStarted && !_passwordsMatch)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "Passwords don't match",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
+                      _buildErrorMessage("Passwords don't match"),
                     if (_passwordStarted && _passwordWeak)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "Password is weak",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
+                      _buildErrorMessage("Password is weak"),
                     if (_emailExists)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "The email already exists",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
+                      _buildErrorMessage("The email already exists"),
                     if (_errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    SizedBox(height: screenHeight * 0.08),
+                      _buildErrorMessage(_errorMessage!),
+                    SizedBox(height: screenHeight * 0.05),
                     _buildSignUpButton(screenHeight, screenWidth),
-                    SizedBox(height: screenHeight * 0.075),
+                    SizedBox(height: screenHeight * 0.04),
                     _buildSignInOption(screenHeight),
                   ],
                 ),
@@ -227,40 +241,74 @@ class _SignInState extends State<SignIn> {
   }
 
   Widget _buildLogo(double screenHeight, double screenWidth) {
-    return Align(
-      alignment: Alignment.center,
-      child: Image.asset(
-        'assets/soma3.png',
-        height: screenHeight * 0.15,
-        width: screenWidth * 0.3,
-        color: Colors.black,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Image.asset(
+            'assets/soma3.png',
+            height: screenHeight * 0.12,
+            width: screenWidth * 0.25,
+            color: const Color(0xFF2E7D32),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          Text(
+            'SOMA',
+            style: GoogleFonts.poppins(
+              textStyle: TextStyle(
+                fontSize: screenHeight * 0.035,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2E7D32),
+                letterSpacing: 3,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildTitle(double screenHeight) {
     return const Center(
-      // child: Text(
-      //   'Access Education under the dollar',
-      //   style: GoogleFonts.poppins(
-      //     textStyle: TextStyle(
-      //       fontSize: screenHeight * 0.025,
-      //       fontWeight: FontWeight.w100,
-      //       color: Colors.black,
-      //     ),
-      //   ),
-      // ),
-    );
+        // child: Text(
+        //   'Access Education under the dollar',
+        //   style: GoogleFonts.poppins(
+        //     textStyle: TextStyle(
+        //       fontSize: screenHeight * 0.025,
+        //       fontWeight: FontWeight.w100,
+        //       color: Colors.black,
+        //     ),
+        //   ),
+        // ),
+        );
   }
 
   Widget _buildSubtitle(double screenHeight) {
     return Text(
-      'Sign In',
+      'Create Your Account',
       style: GoogleFonts.poppins(
         textStyle: TextStyle(
-          fontSize: screenHeight * 0.025,
+          fontSize: screenHeight * 0.035,
           fontWeight: FontWeight.bold,
-          color: Colors.black,
+          color: Colors.white,
+          shadows: [
+            Shadow(
+              color: Colors.black.withOpacity(0.2),
+              offset: const Offset(0, 2),
+              blurRadius: 4,
+            ),
+          ],
         ),
       ),
       textAlign: TextAlign.center,
@@ -269,25 +317,52 @@ class _SignInState extends State<SignIn> {
 
   Widget _buildTextField(double screenHeight, double screenWidth,
       TextEditingController controller, String hintText, IconData icon) {
-    return SizedBox(
+    return Container(
       width: screenWidth * 0.9,
       height: screenHeight * 0.08,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Colors.black),
+        style: TextStyle(
+          color: Colors.black87,
+          fontSize: screenHeight * 0.022,
+        ),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.black87),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: const Color(0xFF2E7D32)),
+          ),
           hintText: hintText,
-          hintStyle: const TextStyle(color: Colors.black45),
+          hintStyle: TextStyle(
+            color: Colors.black54,
+            fontSize: screenHeight * 0.02,
+          ),
           filled: true,
-          fillColor: Colors.grey[300],
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none, // No border but with rounded corners
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none, // No border but with rounded corners
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
           ),
         ),
       ),
@@ -295,111 +370,247 @@ class _SignInState extends State<SignIn> {
   }
 
   Widget _buildPasswordTextField(double screenHeight, double screenWidth) {
-    return SizedBox(
+    return Container(
       width: screenWidth * 0.9,
       height: screenHeight * 0.08,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: TextField(
         controller: _passwordController,
-        style: const TextStyle(color: Colors.black),
+        style: TextStyle(
+          color: Colors.black87,
+          fontSize: screenHeight * 0.022,
+        ),
         obscureText: _obscureText,
         decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.lock_outlined, color: Colors.black87),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.lock_outlined, color: Color(0xFF2E7D32)),
+          ),
           suffixIcon: IconButton(
             icon: Icon(
               _obscureText ? Icons.visibility_outlined : Icons.visibility_off,
-              color: Colors.black87,
+              color: const Color(0xFF2E7D32),
             ),
             onPressed: _togglePasswordVisibility,
           ),
           hintText: 'Password',
-          hintStyle: const TextStyle(color: Colors.black45),
+          hintStyle: TextStyle(
+            color: Colors.black54,
+            fontSize: screenHeight * 0.02,
+          ),
           filled: true,
-          fillColor: Colors.grey[300],
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none, // No border but with rounded corners
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none, // No border but with rounded corners
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildConfirmPasswordTextField(double screenHeight, double screenWidth) {
-    return SizedBox(
+  Widget _buildConfirmPasswordTextField(
+      double screenHeight, double screenWidth) {
+    return Container(
       width: screenWidth * 0.9,
       height: screenHeight * 0.08,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: TextField(
         controller: _confirmPasswordController,
         style: TextStyle(
-          color: _passwordsMatch ? Colors.black45 : Colors.red,
+          color: _passwordsMatch ? Colors.black87 : Colors.red,
+          fontSize: screenHeight * 0.022,
         ),
         obscureText: _obscureText,
         decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.lock_outlined, color: Colors.black87),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.lock_outlined, color: Color(0xFF2E7D32)),
+          ),
           suffixIcon: IconButton(
             icon: Icon(
               _obscureText ? Icons.visibility_outlined : Icons.visibility_off,
-              color: Colors.black87,
+              color: const Color(0xFF2E7D32),
             ),
             onPressed: _togglePasswordVisibility,
           ),
           hintText: 'Confirm Password',
-          hintStyle: const TextStyle(color: Colors.black45),
+          hintStyle: TextStyle(
+            color: Colors.black54,
+            fontSize: screenHeight * 0.02,
+          ),
           filled: true,
-          fillColor: Colors.grey[300],
+          fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none, // No border but with rounded corners
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none, // No border but with rounded corners
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
           ),
         ),
       ),
     );
-
   }
 
   Widget _buildSignUpButton(double screenHeight, double screenWidth) {
-    return ElevatedButton(
-      onPressed: _isSignUpButtonEnabled ? _signUp : null,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green[500],
-        textStyle: TextStyle(fontSize: screenHeight * 0.02),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: EdgeInsets.symmetric(
-          vertical: screenHeight * 0.015,
-          horizontal: screenWidth * 0.3,
-        ),
+    return Container(
+      width: double.infinity,
+      height: screenHeight * 0.07,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        gradient: _isSignUpButtonEnabled
+            ? const LinearGradient(
+                colors: [
+                  Color(0xFF66BB6A),
+                  Color(0xFF4CAF50),
+                  Color(0xFF388E3C)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : LinearGradient(
+                colors: [Colors.grey.shade400, Colors.grey.shade500],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        boxShadow: _isSignUpButtonEnabled
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF4CAF50).withOpacity(0.4),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : [],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Visibility(
-            visible: !_isLoading,
-            child: Text(
-              'Sign up',
-              style: GoogleFonts.poppins(
-                textStyle: TextStyle(
-                  fontSize: screenHeight * 0.02,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      child: ElevatedButton(
+        onPressed: _isSignUpButtonEnabled ? _signUp : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Visibility(
+              visible: !_isLoading,
+              child: Text(
+                'Create Account',
+                style: GoogleFonts.poppins(
+                  textStyle: TextStyle(
+                    fontSize: screenHeight * 0.025,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
+            Visibility(
+              visible: _isLoading,
+              child: LoadingAnimationWidget.staggeredDotsWave(
+                color: Colors.white,
+                size: screenHeight * 0.04,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignInOption(double screenHeight) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-          Visibility(
-            visible: _isLoading,
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.white,
-              size: screenHeight * 0.04,
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Already have an account?',
+            style: GoogleFonts.poppins(
+              textStyle: TextStyle(
+                fontSize: screenHeight * 0.022,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LogIn()),
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            ),
+            child: Text(
+              'Sign In',
+              style: GoogleFonts.poppins(
+                textStyle: TextStyle(
+                  color: const Color(0xFF2E7D32),
+                  fontSize: screenHeight * 0.022,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -407,39 +618,31 @@ class _SignInState extends State<SignIn> {
     );
   }
 
-  Widget _buildSignInOption(double screenHeight) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Already have an account?',
-              style: GoogleFonts.poppins(
-                textStyle: TextStyle(
-                  fontSize: screenHeight * 0.02,
-                  color: Colors.black,
-                ),
+  Widget _buildErrorMessage(String message) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8.0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LogIn()),
-                );
-              },
-              child: Text(
-                'Sign In',
-                style: TextStyle(
-                  color: Colors.blueAccent,
-                  fontSize: screenHeight * 0.02,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

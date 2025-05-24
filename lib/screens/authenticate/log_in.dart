@@ -16,7 +16,8 @@ class LogIn extends StatefulWidget {
   State<LogIn> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LogIn>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -53,7 +54,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       duration: const Duration(milliseconds: 100),
     );
 
-    _animation = Tween<double>(begin: 1.0, end: 0.95).animate(_animationController);
+    _animation =
+        Tween<double>(begin: 1.0, end: 0.95).animate(_animationController);
   }
 
   @override
@@ -101,7 +103,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
 
       setState(() {
         _isLoading = false;
-      });      if (response.statusCode == 200) {
+      });
+      if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         // Store the JWT token from the Node.js backend
@@ -112,7 +115,8 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
 
         // Store user data if available
         if (data['user'] != null) {
-          await _storage.write(key: 'user_data', value: json.encode(data['user']));
+          await _storage.write(
+              key: 'user_data', value: json.encode(data['user']));
         }
 
         // Always save the email, even if remember me is false
@@ -149,9 +153,44 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
       body: Container(
         width: screenWidth,
         height: screenHeight,
-        color: Colors.white,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFFDF7F2),
+              Color(0xFFE8F5F3),
+              Color(0xFFF0F8FF),
+            ],
+          ),
+        ),
         child: Stack(
           children: [
+            // Background decorative elements
+            Positioned(
+              top: -50,
+              right: -50,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.green.withOpacity(0.1),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -30,
+              left: -30,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blue.withOpacity(0.1),
+                ),
+              ),
+            ),
             SingleChildScrollView(
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -161,225 +200,437 @@ class _LoginScreenState extends State<LogIn> with SingleTickerProviderStateMixin
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: screenHeight * 0.05),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Image.asset(
-                        'assets/soma3.png',
-                        height: screenHeight * 0.15,
-                        width: screenWidth * 0.3,
-                        color: Colors.black,
+                    SizedBox(height: screenHeight * 0.08),
+                    // Enhanced Logo Section
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.1),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Image.asset(
+                              'assets/soma3.png',
+                              height: screenHeight * 0.12,
+                              width: screenWidth * 0.25,
+                              color: Colors.green[700],
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          Text(
+                            'SOMA APP',
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                fontSize: screenHeight * 0.035,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                                letterSpacing: 2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Learn • Grow • Excel',
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                fontSize: screenHeight * 0.022,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    // SizedBox(height: screenHeight * 0.03),
-                    // Center(child: Text('Access Education under the dollar',style: GoogleFonts.poppins(
-                    //   textStyle: TextStyle(
-                    //     fontSize: screenHeight * 0.025,
-                    //     fontWeight: FontWeight.w100,
-                    //     color: Colors.black,
-                    //   ),
-                    // ),)),
-                    SizedBox(height: screenHeight * 0.03),
+                    SizedBox(height: screenHeight * 0.04),
+                    // Welcome Message
                     Text(
-                      'Login',
+                      'Welcome Back!',
                       style: GoogleFonts.poppins(
                         textStyle: TextStyle(
-                          fontSize: screenHeight * 0.025,
+                          fontSize: screenHeight * 0.038,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.green[800],
                         ),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: screenHeight * 0.05),
-
-                    TextField(
-                      controller: _emailController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.mail_outline, color: Colors.black87),
-                        hintText: 'Email',
-                        hintStyle: const TextStyle(color: Colors.black45),
-                        filled: true,
-                        fillColor: Colors.grey[300],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none, // No border but with rounded corners
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none, // No border but with rounded corners
-                        ),
-                        // focusedBorder: OutlineInputBorder(
-                        //   borderRadius: BorderRadius.circular(30),
-                        //   borderSide: BorderSide(color: Colors.green, width: 2.0), // Green border when focused
-                        // ),
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: screenHeight * 0.02,
-                          horizontal: screenWidth * 0.04,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sign in to continue your learning journey',
+                      style: GoogleFonts.poppins(
+                        textStyle: TextStyle(
+                          fontSize: screenHeight * 0.022,
+                          color: Colors.grey[600],
                         ),
                       ),
+                      textAlign: TextAlign.center,
                     ),
+                    SizedBox(height: screenHeight * 0.04),
 
-                    SizedBox(height: screenHeight * 0.02),
-                    TextField(
-                      controller: _passwordController,
-                      style: const TextStyle(color: Colors.black),
-                      obscureText: _obscureText,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.black87),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureText ? Icons.visibility_outlined : Icons.visibility_off,
-                            color: Colors.black,
+                    // Enhanced Email Field
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
-                          onPressed: _togglePasswordVisibility,
-                        ),
-                        hintText: 'Password',
-                        hintStyle: const TextStyle(color: Colors.black45),
-                        filled: true,
-                        fillColor: Colors.grey[300],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none, // No border but with rounded corners
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none, // No border but with rounded corners
-                        ),
-
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: screenHeight * 0.02,
-                          horizontal: screenWidth * 0.04,
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _emailController,
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 18),
+                        decoration: InputDecoration(
+                          prefixIcon: Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.mail_outline,
+                                color: Colors.green[700]),
+                          ),
+                          hintText: 'Enter your email',
+                          hintStyle:
+                              TextStyle(color: Colors.grey[500], fontSize: 18),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green[600]!, width: 2),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.02,
+                            horizontal: screenWidth * 0.04,
+                          ),
                         ),
                       ),
                     ),
+
+                    SizedBox(height: screenHeight * 0.025),
+                    // Enhanced Password Field
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _passwordController,
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 18),
+                        obscureText: _obscureText,
+                        decoration: InputDecoration(
+                          prefixIcon: Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.lock_outline,
+                                color: Colors.green[700]),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureText
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: Colors.green[600],
+                            ),
+                            onPressed: _togglePasswordVisibility,
+                          ),
+                          hintText: 'Enter your password',
+                          hintStyle:
+                              TextStyle(color: Colors.grey[500], fontSize: 18),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green[600]!, width: 2),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.02,
+                            horizontal: screenWidth * 0.04,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     if (_errorMessage != null)
-                      Padding(
-                        padding: EdgeInsets.only(top: screenHeight * 0.01),
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(color: Colors.red, fontSize: screenHeight * 0.02),
+                      Container(
+                        margin: EdgeInsets.only(top: screenHeight * 0.02),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border:
+                              Border.all(color: Colors.red.withOpacity(0.3)),
                         ),
-                      ),
-                    SizedBox(height: screenHeight * 0.02),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end, // Aligns the text to the right
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const ForgotPass()),
-                            );
-                          },
-                          child: Text(
-                            'Forgot password?',
-                            style: GoogleFonts.poppins(
-                              textStyle: TextStyle(
-                                fontSize: screenHeight * 0.018,
-                                color: Colors.blueAccent,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: screenHeight * 0.1),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isButtonEnabled,
-                      builder: (context, value, child) {
-                        return ScaleTransition(
-                          scale: _animation,
-                          child: ElevatedButton(
-                            onPressed: value
-                                ? () {
-                              _animationController
-                                  .forward()
-                                  .then((_) {
-                                _animationController.reverse();
-                                _login();
-                              });
-                            }
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[500],
-                              textStyle: TextStyle(fontSize: screenHeight * 0.025),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-
-                              
-                              padding: EdgeInsets.symmetric(
-                                vertical: screenHeight * 0.010,
-                                horizontal: screenWidth * 0.3,
-                              ),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Visibility(
-                                  visible: !_isLoading,
-                                  child: Text(
-                                    'Login',
-                                    style: GoogleFonts.poppins(
-                                      textStyle: TextStyle(
-                                        fontSize: screenHeight * 0.025,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: _isLoading,
-                                  child: LoadingAnimationWidget.staggeredDotsWave(
-                                    color: Colors.white,
-                                    size: screenHeight * 0.04,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: screenHeight * 0.05),
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Row(
                           children: [
-                            Text(
-                              "Don't have an account?",
-                              style: GoogleFonts.poppins(
-                                textStyle: TextStyle(
-                                  fontSize: screenHeight * 0.019,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const SignIn()),
-                                );
-                              },
+                            Icon(Icons.error_outline,
+                                color: Colors.red[700], size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
                               child: Text(
-                                'Create new one',
+                                _errorMessage!,
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
-                                    fontSize: screenHeight * 0.015,
-                                    color: Colors.blueAccent,
+                                    color: Colors.red[700],
+                                    fontSize: screenHeight * 0.020,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         ),
+                      ),
+
+                    SizedBox(height: screenHeight * 0.025),
+
+                    // Enhanced Remember Me and Forgot Password Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Transform.scale(
+                              scale: 1.2,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _rememberMe = value!;
+                                  });
+                                },
+                                activeColor: Colors.green[600],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'Remember me',
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                  fontSize: screenHeight * 0.020,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const ForgotPass()),
+                            );
+                          },
+                          child: Text(
+                            'Forgot password?',
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                fontSize: screenHeight * 0.020,
+                                color: Colors.green[600],
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
+                    ),
+
+                    SizedBox(
+                        height: screenHeight * 0.04), // Enhanced Login Button
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _isButtonEnabled,
+                      builder: (context, value, child) {
+                        return ScaleTransition(
+                          scale: _animation,
+                          child: Container(
+                            width: double.infinity,
+                            height: screenHeight * 0.065,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: value
+                                    ? [Colors.green[600]!, Colors.green[700]!]
+                                    : [Colors.grey[400]!, Colors.grey[500]!],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: value
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.green.withOpacity(0.3),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: value
+                                  ? () {
+                                      _animationController.forward().then((_) {
+                                        _animationController.reverse();
+                                        _login();
+                                      });
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: _isLoading
+                                  ? LoadingAnimationWidget.staggeredDotsWave(
+                                      color: Colors.white,
+                                      size: screenHeight * 0.03,
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.login_rounded,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          'Sign In',
+                                          style: GoogleFonts.poppins(
+                                            textStyle: TextStyle(
+                                              fontSize: screenHeight * 0.026,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    SizedBox(height: screenHeight * 0.04),
+
+                    // Enhanced Sign Up Section
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(15),
+                        border:
+                            Border.all(color: Colors.green.withOpacity(0.2)),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            "New to SOMA?",
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                fontSize: screenHeight * 0.022,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            height: screenHeight * 0.055,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const SignIn()),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    color: Colors.green[600]!, width: 2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.person_add_rounded,
+                                    color: Colors.green[600],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Create Account',
+                                    style: GoogleFonts.poppins(
+                                      textStyle: TextStyle(
+                                        fontSize: screenHeight * 0.022,
+                                        color: Colors.green[600],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(height: screenHeight * 0.02),
                   ],

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +12,6 @@ import 'package:system_auth/models/modelquestions.dart';
 import 'package:system_auth/screens/home/interim.dart';
 import 'package:system_auth/screens/home/motivation_quotes.dart';
 import 'package:system_auth/utils/audio_helpers.dart';
-import 'package:system_auth/utils/questions_cache.dart';
 import '../../config.dart';
 import 'congratulations.dart';
 
@@ -55,11 +53,34 @@ class _QuestionsPageState extends State<QuestionsPage> {
   int totalAttempted = 0; // Add variable to track total attempts
   int currentBatch = 1;
   int batchSize = 10;
+  int lastInterimMilestone =
+      0; // Track the last milestone where interim results were shown
   String? currentSessionId;
   final String apiKey =
       'e4e855cee27d4bba9b9f70391fc7ef33'; // Replace with your Voice RSS API key
   final String correctSound = 'correct.mp3'; // Path to correct answer sound
   final String wrongSound = 'wrong.mp3'; // Path to wrong answer sound
+
+  // List of available animations
+  final List<String> availableAnimations = [
+    'assets/new animations/Animation - 1720516117842.json',
+    'assets/new animations/Animation - 1748106511073.json',
+    'assets/new animations/Animation - 1748106814060.json',
+    'assets/new animations/Animation - 1748106837136.json',
+    'assets/new animations/Animation - 1748110777888.json',
+    'assets/new animations/Animation - 1748110841169.json',
+    'assets/new animations/Animation - 1748110879509.json',
+    'assets/new animations/Animation - 1748110974416.json',
+    'assets/new animations/Animation - 1748111072025.json',
+    'assets/new animations/Animation - 1748111118338.json',
+    'assets/new animations/Animation - 1748111194249.json',
+    'assets/new animations/Animation - 1748111571198.json',
+    'assets/new animations/Animation - 1748111597439.json',
+    'assets/new animations/Animation - 1748111658955.json',
+    'assets/new animations/Animation - 1748111692882.json',
+    'assets/new animations/Animation - 1748111731781.json',
+    'assets/new animations/Animation - 1748111772188.json',
+  ];
 
   Future<void> speak(String text) async {
     final url = Uri.parse('https://api.voicerss.org/');
@@ -114,6 +135,8 @@ class _QuestionsPageState extends State<QuestionsPage> {
       currentQuestionIndex = 0;
       score = 0;
       questionsAttempted = 0;
+      totalAttempted = 0;
+      lastInterimMilestone = 0;
       selectedChoice = null;
     });
   }
@@ -126,7 +149,6 @@ class _QuestionsPageState extends State<QuestionsPage> {
       startNewSession();
       return;
     }
-
     setState(() {
       currentQuestionIndex = prefs.getInt(
               'currentQuestionIndex_${widget.topicId}_$currentSessionId') ??
@@ -134,6 +156,12 @@ class _QuestionsPageState extends State<QuestionsPage> {
       score = prefs.getInt('score_${widget.topicId}_$currentSessionId') ?? 0;
       questionsAttempted = prefs.getInt(
               'questionsAttempted_${widget.topicId}_$currentSessionId') ??
+          0;
+      totalAttempted =
+          prefs.getInt('totalAttempted_${widget.topicId}_$currentSessionId') ??
+              0;
+      lastInterimMilestone = prefs.getInt(
+              'lastInterimMilestone_${widget.topicId}_$currentSessionId') ??
           0;
     });
   }
@@ -147,6 +175,11 @@ class _QuestionsPageState extends State<QuestionsPage> {
     await prefs.setInt('score_${widget.topicId}_$currentSessionId', score);
     await prefs.setInt('questionsAttempted_${widget.topicId}_$currentSessionId',
         questionsAttempted);
+    await prefs.setInt(
+        'totalAttempted_${widget.topicId}_$currentSessionId', totalAttempted);
+    await prefs.setInt(
+        'lastInterimMilestone_${widget.topicId}_$currentSessionId',
+        lastInterimMilestone);
   }
 
   Future<void> fetchQuestions() async {
@@ -807,48 +840,42 @@ class _QuestionsPageState extends State<QuestionsPage> {
     return hexRegex.hasMatch(id);
   }
 
+  // Get current animation based on question index
+  String getCurrentAnimation() {
+    if (availableAnimations.isEmpty) {
+      return 'assets/caterpillar.json'; // Fallback to default
+    }
+
+    // Cycle through animations based on current question index
+    int animationIndex = currentQuestionIndex % availableAnimations.length;
+    return availableAnimations[animationIndex];
+  }
+
   void _showMotivationalQuotes() {
     debugPrint('Showing motivational quotes...');
 
     try {
-      // Store current index for later use to prevent index errors
-      final int currentIndex = currentQuestionIndex;
-      final int nextIndex = currentIndex + 1;
+      // Store current index to prevent any state issues
+      final int savedQuestionIndex = currentQuestionIndex;
 
-      // Show motivational quotes page
+      // Show motivational quotes page without continue button
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MotivationQuotesPage(
-            onContinue: () {
-              debugPrint('User tapped continue on motivational quotes');
-              // Handle the transition safely
-              if (mounted) {
-                Navigator.pop(context);
-                setState(() {
-                  // Make sure we don't go beyond the available questions
-                  if (nextIndex < currentBatchQuestions.length) {
-                    currentQuestionIndex = nextIndex;
-                  }
-                  selectedChoice = null;
-                });
-                saveProgress();
-              }
-            },
-          ),
+          builder: (context) => const MotivationQuotesPage(),
         ),
       );
 
-      // Automatically continue after 8 seconds, even if the user doesn't tap continue
-      Future.delayed(const Duration(seconds: 8), () {
+      // Automatically close after exactly 4 seconds and continue to next question
+      Future.delayed(const Duration(seconds: 4), () {
         if (mounted && Navigator.canPop(context)) {
-          debugPrint('Auto-continuing after motivational quotes');
+          debugPrint(
+              'Auto-continuing after 4-second motivational quotes display');
           Navigator.pop(context);
+
+          // Continue to next question safely
           setState(() {
-            // Make sure we don't go beyond the available questions
-            if (nextIndex < currentBatchQuestions.length) {
-              currentQuestionIndex = nextIndex;
-            }
+            currentQuestionIndex = savedQuestionIndex + 1;
             selectedChoice = null;
           });
           saveProgress();
@@ -856,11 +883,9 @@ class _QuestionsPageState extends State<QuestionsPage> {
       });
     } catch (e) {
       debugPrint('Error showing motivational quotes: $e');
-      // If there's an error, just move to the next question
+      // If there's an error, just move to the next question safely
       setState(() {
-        if (currentQuestionIndex + 1 < currentBatchQuestions.length) {
-          currentQuestionIndex++;
-        }
+        currentQuestionIndex++;
         selectedChoice = null;
       });
       saveProgress();
@@ -872,64 +897,96 @@ class _QuestionsPageState extends State<QuestionsPage> {
     int availableQuestions = allQuestions.length - startIndex;
     List<Question> newQuestions = [];
 
-    if (availableQuestions <= 0 && wrongQuestions.isEmpty) {
+    if (availableQuestions <= 0 &&
+        (wrongQuestions.isEmpty || !isReviewingWrongAnswers)) {
       // No more questions available
       debugPrint('No more questions available. Showing congratulations.');
       showCongratulations();
       return;
     }
 
-    // Always start from the beginning after question 10
-    if (totalAttempted >= 10) {
-      startIndex = 0; // Reset to the beginning
-      availableQuestions =
-          allQuestions.length; // All questions are available again
+    // If we're in review mode, only show wrong questions
+    if (isReviewingWrongAnswers) {
       debugPrint(
-          'Resetting questions to start from the beginning after 10 questions');
+          'In review mode - showing only wrong questions: ${wrongQuestions.length}');
+      currentBatchQuestions = List<Question>.from(wrongQuestions);
+
+      // Don't shuffle wrong questions during review
+      return;
     }
 
-    int newQuestionsNeeded = batchSize - wrongQuestions.length;
-    debugPrint('Need $newQuestionsNeeded new questions for this batch');
+    // In normal mode, don't include wrong questions until after interim/congrats page
+    int questionsNeeded = batchSize;
+    debugPrint('Need $questionsNeeded new questions for this batch');
 
     if (availableQuestions > 0) {
       newQuestions =
-          allQuestions.skip(startIndex).take(newQuestionsNeeded).toList();
+          allQuestions.skip(startIndex).take(questionsNeeded).toList();
       debugPrint(
           'Adding ${newQuestions.length} new questions starting from index $startIndex');
     }
 
-    currentBatchQuestions = [...wrongQuestions, ...newQuestions];
+    // In normal mode, only use regular questions, not wrong ones
+    currentBatchQuestions = newQuestions;
     currentBatchQuestions.shuffle(); // Randomize order
-    debugPrint(
-        'Prepared batch with ${currentBatchQuestions.length} questions (${wrongQuestions.length} wrong questions)');
 
-    // If we have reached 10 or more questions and there are still more available
-    if (totalAttempted >= 10 && allQuestions.length > 10 && currentBatch > 1) {
-      // Show interim results after every 10 questions, regardless of batch size
-      debugPrint('Showing interim results after 10 questions');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showInterimResults();
-      });
+    debugPrint(
+        'Prepared batch with ${currentBatchQuestions.length} questions (${wrongQuestions.length} wrong questions)'); // Only show interim results if we're exactly at a multiple of 10
+    // and we haven't shown interim results for this milestone yet
+    int currentMilestone = (totalAttempted ~/ 10) * 10;
+    if (totalAttempted > 0 &&
+        totalAttempted % 10 == 0 &&
+        lastInterimMilestone < currentMilestone) {
+      // Update the last milestone where we showed interim results
+      lastInterimMilestone = currentMilestone;
+      debugPrint('Showing interim results after $totalAttempted questions');
+      // Don't show immediately on first batch preparation
+      if (currentBatch > 1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showInterimResults();
+        });
+      }
     }
 
     setState(() {
       currentQuestionIndex = 0;
-      wrongQuestions = [];
+      // In review mode, we'll clear wrong questions as user gets them right in checkAnswer
     });
   }
 
   void showInterimResults() {
+    // Create a copy of wrong questions for the interim results page
+    List<Question> wrongQuestionsCopy = List<Question>.from(wrongQuestions);
+
+    // Log the wrong questions being passed to the interim results page
+    debugPrint(
+        'Showing interim results with ${wrongQuestionsCopy.length} wrong questions');
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => InterimResultsPage(
           score: score,
-          wrongQuestions: wrongQuestions,
+          wrongQuestions: wrongQuestionsCopy,
           batchNumber: currentBatch,
           totalQuestions: allQuestions.length,
           onContinue: () {
-            currentBatch++;
-            prepareBatch();
+            // When continuing from interim results page, check if we should now review wrong questions
+            if (currentBatch * batchSize >= allQuestions.length &&
+                wrongQuestions.isNotEmpty &&
+                wrongQuestionsCopy.isNotEmpty) {
+              debugPrint(
+                  'All regular questions completed. Now reviewing wrong answers only.');
+              setState(() {
+                isReviewingWrongAnswers = true;
+                // Reset current question index for wrong questions review
+                currentQuestionIndex = 0;
+              });
+              prepareBatch(); // This will now only include wrong questions
+            } else {
+              currentBatch++;
+              prepareBatch(); // Continue with normal questions
+            }
             Navigator.pop(context);
           },
         ),
@@ -953,17 +1010,34 @@ class _QuestionsPageState extends State<QuestionsPage> {
     debugPrint('Selected: $selectedChoice ($selectedValue)');
     debugPrint('Correct answer value: $correctAnswerValue');
     debugPrint('Is correct: $isCorrect');
-
     try {
       if (isCorrect) {
         score += 10;
         await playSound(correctSound);
         await saveTotalPoints(10);
+
+        // If we're reviewing wrong questions and this one was correct,
+        // remove it from the wrong questions list
+        if (isReviewingWrongAnswers) {
+          wrongQuestions.removeWhere((q) =>
+              q.mongoId == currentBatchQuestions[currentQuestionIndex].mongoId);
+          debugPrint(
+              'Question answered correctly in review mode. Removed from wrong questions.');
+          debugPrint('Remaining wrong questions: ${wrongQuestions.length}');
+        }
       } else {
         await playSound(wrongSound);
-        // Add wrong question to list
+        // Add wrong question to list for the next batch
         if (!isReviewingWrongAnswers) {
-          wrongQuestions.add(currentBatchQuestions[currentQuestionIndex]);
+          // Check if the question is already in the wrong questions list
+          bool isAlreadyInWrongQuestions = wrongQuestions.any((q) =>
+              q.mongoId == currentBatchQuestions[currentQuestionIndex].mongoId);
+
+          if (!isAlreadyInWrongQuestions) {
+            wrongQuestions.add(currentBatchQuestions[currentQuestionIndex]);
+            debugPrint(
+                'Added question to wrong questions list. Total wrong questions: ${wrongQuestions.length}');
+          }
         }
       }
     } catch (e) {
@@ -1162,7 +1236,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
                               correctAnswerValue,
                               style: GoogleFonts.fredoka(
                                 textStyle: const TextStyle(
-                                  color: Colors.black87,
+                                  color: Colors.white,
                                   fontSize: 17,
                                   fontWeight: FontWeight.w500,
                                   height: 1.3,
@@ -1204,29 +1278,43 @@ class _QuestionsPageState extends State<QuestionsPage> {
                   onPressed: () {
                     Navigator.pop(context);
 
-                    // First check if we've reached the end of current batch
-                    if (currentQuestionIndex + 1 >=
-                        currentBatchQuestions.length) {
+                    // Check if we need to show interim results after exactly 10 questions
+                    if (totalAttempted % 10 == 0 &&
+                        lastInterimMilestone < totalAttempted) {
+                      // Update milestone counter
+                      lastInterimMilestone = totalAttempted;
                       debugPrint(
-                          'Reached end of batch, showing interim results');
+                          'Showing interim results after $totalAttempted questions');
                       showInterimResults();
                       return;
                     }
 
-                    // Then check if we've reached 5 questions to show motivational page
-                    if (questionsAttempted > 0 && questionsAttempted % 5 == 0) {
+                    // Check if we've reached the end of current batch
+                    if (currentQuestionIndex + 1 >=
+                        currentBatchQuestions.length) {
+                      debugPrint('Reached end of batch');
+                      // Prepare next batch and continue
+                      currentBatch++;
+                      prepareBatch();
+                      return;
+                    }
+
+                    // Show motivational quotes every 5 questions, but not when showing interim results
+                    if (questionsAttempted > 0 &&
+                        questionsAttempted % 5 == 0 &&
+                        totalAttempted % 10 != 0) {
                       debugPrint(
                           'Showing motivational quotes after $questionsAttempted questions');
                       _showMotivationalQuotes();
+                      return; // Important: return here to prevent double navigation
                     }
+
                     // Otherwise just move to the next question
-                    else {
-                      setState(() {
-                        currentQuestionIndex++;
-                        selectedChoice = null;
-                      });
-                      saveProgress();
-                    }
+                    setState(() {
+                      currentQuestionIndex++;
+                      selectedChoice = null;
+                    });
+                    saveProgress();
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -1281,8 +1369,12 @@ class _QuestionsPageState extends State<QuestionsPage> {
     setState(() {
       currentQuestionIndex++;
       selectedChoice = null;
+
+      // If we've reached the end of the current batch
       if (currentQuestionIndex >= currentBatchQuestions.length) {
-        showInterimResults();
+        // Prepare next batch instead of immediately showing interim results
+        currentBatch++;
+        prepareBatch();
       }
     });
     saveProgress();
@@ -1297,6 +1389,17 @@ class _QuestionsPageState extends State<QuestionsPage> {
           totalQuestions: originalQuestionCount, // Use original count
           questionsAttempted: totalAttempted, // Use total attempts
           originalQuestionCount: originalQuestionCount,
+          wrongQuestions: wrongQuestions, // Pass wrong questions for review
+          onReviewWrongAnswers: wrongQuestions.isNotEmpty
+              ? () {
+                  setState(() {
+                    isReviewingWrongAnswers = true;
+                    currentQuestionIndex = 0;
+                    prepareBatch(); // This will show only wrong questions
+                  });
+                  Navigator.pop(context);
+                }
+              : null,
         ),
       ),
     );
@@ -1364,402 +1467,277 @@ class _QuestionsPageState extends State<QuestionsPage> {
         ],
       ),
       body: Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF3F51B5), // Indigo
-            const Color(0xFF5C6BC0), // Medium Indigo
-            const Color(0xFFE8EAF6).withOpacity(0.9), // Light indigo/white
-          ],
-          stops: const [0.0, 0.3, 1.0],
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF3F51B5), // Indigo
+              const Color(0xFF5C6BC0), // Medium Indigo
+              const Color(0xFFE8EAF6).withOpacity(0.9), // Light indigo/white
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+          // Only show background image during loading
+          image: isLoading
+              ? const DecorationImage(
+                  image: AssetImage('assets/soma2.png'),
+                  fit: BoxFit.cover,
+                  opacity: 0.05,
+                  alignment: Alignment.bottomCenter,
+                )
+              : null,
         ),
-        image: const DecorationImage(
-          image: AssetImage('assets/soma2.png'),
-          fit: BoxFit.cover,
-          opacity: 0.05,
-          alignment: Alignment.bottomCenter,
-        ),
-      ),
-      child: isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Lottie.asset(
-                    'assets/loader.json',
-                    width: 120,
-                    height: 120,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Loading questions...',
-                    style: GoogleFonts.fredoka(
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+        child: isLoading
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Lottie.asset(
+                      'assets/loader.json',
+                      width: 120,
+                      height: 120,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Loading questions...',
+                      style: GoogleFonts.fredoka(
+                        textStyle: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 60, color: Colors.white),
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        margin: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          errorMessage!,
-                          style: GoogleFonts.fredoka(
-                            textStyle: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF3F51B5),
-                            ),
+                  ],
+                ),
+              )
+            : errorMessage != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 60, color: Colors.white),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : currentBatchQuestions.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Lottie.asset(
-                            'assets/books.json',
-                            width: 150,
-                            height: 150,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No questions available for this topic',
+                          child: Text(
+                            errorMessage!,
                             style: GoogleFonts.fredoka(
                               textStyle: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                                color: Color(0xFF3F51B5),
                               ),
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                        ],
-                      ),
-                    )
-                  // This is the key part that changes:
-                  : SafeArea(
-                      bottom: true, // Important to avoid the bottom overflow
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
+                        ),
+                      ],
+                    ),
+                  )
+                : currentBatchQuestions.isEmpty
+                    ? Center(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Score indicator section
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ],
+                            Lottie.asset(
+                              'assets/books.json',
+                              width: 150,
+                              height: 150,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No questions available for this topic',
+                              style: GoogleFonts.fredoka(
+                                textStyle: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF3F51B5),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: Text(
-                                            '${currentQuestionIndex + 1}/${currentBatchQuestions.length}',
-                                            style: GoogleFonts.fredoka(
-                                              textStyle: const TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    // This is the key part that changes:
+                    : SafeArea(
+                        bottom: true, // Important to avoid the bottom overflow
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              // Score indicator section
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF3F51B5),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              '${currentQuestionIndex + 1}/${currentBatchQuestions.length}',
+                                              style: GoogleFonts.fredoka(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Question',
-                                          style: GoogleFonts.fredoka(
-                                            textStyle: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF3F51B5),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Score: ',
-                                          style: GoogleFonts.fredoka(
-                                            textStyle: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                              color: Color(0xFF3F51B5),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.amber,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            '$score',
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Question',
                                             style: GoogleFonts.fredoka(
                                               textStyle: const TextStyle(
                                                 fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            
-                            // Skip/Results button row
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: currentQuestionIndex >=
-                                            currentBatchQuestions.length - 1
-                                        ? null
-                                        : skipQuestion,
-                                    style: ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: Colors.orange,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
-                                    ),
-                                    icon: const Icon(Icons.skip_next_rounded,
-                                        size: 20),
-                                    label: Text(
-                                      'Skip',
-                                      style: GoogleFonts.fredoka(
-                                        textStyle: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  ElevatedButton.icon(
-                                    onPressed: questionsAttempted == 0
-                                        ? null
-                                        : () {
-                                            showCongratulations();
-                                          },
-                                    style: ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: questionsAttempted == 0
-                                          ? Colors.grey
-                                          : const Color(0xFF4CAF50),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
-                                    ),
-                                    icon: const Icon(Icons.emoji_events_rounded,
-                                        size: 20),
-                                    label: Text(
-                                      'Results',
-                                      style: GoogleFonts.fredoka(
-                                        textStyle: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            
-                            // Question section - no nested ScrollView anymore
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: currentQuestionIndex <
-                                      currentBatchQuestions.length
-                                  ? buildQuestion()
-                                  : Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Lottie.asset(
-                                            'assets/congratulations.json',
-                                            width: 200,
-                                            height: 200,
-                                          ),
-                                          Text(
-                                            'You have completed the quiz!',
-                                            style: GoogleFonts.fredoka(
-                                              textStyle: const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF3F51B5),
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                            ),
-                            
-                            // Bottom buttons section
-                            buildBottomButtons(),
-                            
-                            // Add extra padding at the bottom to avoid the warning lines
-                            const SizedBox(height: 165), // Increased from standard 130
-                          ],
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Score: ',
+                                            style: GoogleFonts.fredoka(
+                                              textStyle: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF3F51B5),
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.amber,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              '$score',
+                                              style: GoogleFonts.fredoka(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ), // Question section - no nested ScrollView anymore
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: currentQuestionIndex <
+                                        currentBatchQuestions.length
+                                    ? buildQuestion()
+                                    : Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Lottie.asset(
+                                              'assets/congratulations.json',
+                                              width: 200,
+                                              height: 200,
+                                            ),
+                                            Text(
+                                              'You have completed the quiz!',
+                                              style: GoogleFonts.fredoka(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                              ),
+
+                              // Add extra padding at the bottom to avoid the warning lines
+                              const SizedBox(
+                                  height: 165), // Increased from standard 130
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-    ),
+      ),
     );
-  }
+  } // Update the buildQuestion method to match the screenshot UI
 
-    // Update the buildQuestion method to make questions more visible
   Widget buildQuestion() {
     var question = currentBatchQuestions[currentQuestionIndex];
-  
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.indigo.shade100,
-          width: 1.5,
-        ),
-      ),
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Reduce animation size
-              Container(
-                height: 70,
-                width: 70,
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.indigo.shade50,
-                  borderRadius: BorderRadius.circular(14),
-                ),
+              // Animated character on the left side - changes with each question
+              SizedBox(
                 child: Lottie.asset(
-                  'assets/jumps.json',
+                  getCurrentAnimation(),
                   repeat: true,
+                  width: 110,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF673AB7).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFF673AB7).withOpacity(0.2),
-                          width: 1,
+                    const SizedBox(height: 10),
+                    // Question text
+                    Text(
+                      question.question,
+                      style: GoogleFonts.lexendDeca(
+                        textStyle: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                      ),
-                      child: Text(
-                        'Question ${currentQuestionIndex + 1}',
-                        style: GoogleFonts.fredoka(
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF673AB7),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // ADD THIS CONTAINER to make question text more visible
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey.shade200,
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        question.question,
-                        style: GoogleFonts.fredoka(
-                          textStyle: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600, // Less bold
-                            color: Color(0xFF3F51B5),
-                            height: 1.3,
-                          ),
-                        ),
-                        // Limit to max 5 lines if very long
-                        maxLines: 5,
-                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ],
@@ -1767,325 +1745,62 @@ class _QuestionsPageState extends State<QuestionsPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Reduce image height
-          if (question.imageUrl != null && question.imageUrl!.isNotEmpty) ...[
-            Center(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.15, // Reduce height
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 6,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    question.imageUrl!,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      debugPrint('Error loading image: $error');
-                      return const SizedBox();
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget buildBottomButtons() {
-    var question = currentBatchQuestions[currentQuestionIndex];
-    var options = question.options.entries.toList();
-
-    // Limit to maximum of 6 options to avoid overflow
-    if (options.length > 6) {
-      debugPrint(
-          'Warning: More than 6 options found (${options.length}). Limiting to 6.');
-      options = options.take(6).toList();
-    }
-
-    // Define a list of gradient colors for the options
-    final List<List<Color>> optionGradients = [
-      [const Color(0xFF9575CD), const Color(0xFFB39DDB)], // Purple
-      [const Color(0xFF4FC3F7), const Color(0xFF81D4FA)], // Light Blue
-      [const Color(0xFF81C784), const Color(0xFFA5D6A7)], // Green
-      [const Color(0xFFFFB74D), const Color(0xFFFFCC80)], // Orange
-      [const Color(0xFFFF8A65), const Color(0xFFFFAB91)], // Deep Orange
-      [const Color(0xFF7986CB), const Color(0xFF9FA8DA)], // Indigo
-    ];
-
-    return Container(
-      margin:
-          const EdgeInsets.fromLTRB(16, 8, 16, 8), // Reduced vertical margin
-      padding: const EdgeInsets.all(16), // Reduced padding
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20), // Smaller radius
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            spreadRadius: 0,
-            offset: const Offset(0, -1),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.indigo.shade100,
-          width: 1, // Thinner border
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min, // Important to minimize height
-        children: [
-          // Header - make more compact
-          Container(
-            margin: const EdgeInsets.only(bottom: 12), // Reduced margin
-            padding: const EdgeInsets.symmetric(
-                horizontal: 12, vertical: 6), // Reduced padding
-            decoration: BoxDecoration(
-              color: const Color(0xFF3F51B5).withOpacity(0.08),
-              borderRadius: BorderRadius.circular(10), // Smaller radius
-              border: Border.all(
-                color: const Color(0xFF3F51B5).withOpacity(0.15),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              'Choose the correct answer:',
-              style: GoogleFonts.fredoka(
-                textStyle: const TextStyle(
-                  fontSize: 16, // Smaller font
-                  fontWeight: FontWeight.w600, // Less bold
-                  color: Color(0xFF3F51B5),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8), // Reduced spacing
-
-          // Options - make more compact
-          ...options.asMap().entries.map((entry) {
-            final int index = entry.key;
-            final option = entry.value;
-            final gradientColors =
-                optionGradients[index % optionGradients.length];
-            final bool isSelected = selectedChoice == option.key;
-
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              margin: const EdgeInsets.only(bottom: 8), // Reduced margin
-              decoration: BoxDecoration(
-                gradient: isSelected
-                    ? LinearGradient(
-                        colors: gradientColors,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: isSelected ? null : Colors.grey[100],
-                borderRadius: BorderRadius.circular(12), // Smaller radius
-                border: Border.all(
-                  color: isSelected ? gradientColors[0] : Colors.grey[300]!,
-                  width: 1.5, // Thinner border
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: gradientColors[0].withOpacity(0.2),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    selectedChoice = option.key;
-                  });
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 12.0, horizontal: 12.0), // Reduced padding
-                  child: Row(
-                    children: [
-                      // Option circle - smaller
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: 36, // Smaller
-                        height: 36, // Smaller
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.white
-                              : gradientColors[0].withOpacity(0.15),
-                          borderRadius:
-                              BorderRadius.circular(10), // Smaller radius
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 3,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Center(
-                          child: Text(
-                            option.key,
-                            style: GoogleFonts.fredoka(
-                              textStyle: TextStyle(
-                                fontSize: 18, // Smaller font
-                                fontWeight: FontWeight.bold,
-                                color: isSelected
-                                    ? gradientColors[0]
-                                    : Colors.black87,
-                              ),
-                            ),
+          const SizedBox(height: 20),
+          // Answer options - Using simple orange buttons
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: question.options.entries
+                .map((option) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedChoice = option.key;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: selectedChoice == option.key
+                              ? Colors.orange.shade400
+                              : Colors.orange.shade300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                      ),
-                      const SizedBox(width: 12), // Reduced spacing
-                      // Option text - make sure it wraps if needed
-                      Expanded(
                         child: Text(
                           option.value.toString(),
-                          style: GoogleFonts.fredoka(
-                            textStyle: TextStyle(
-                              fontSize: 15, // Smaller font
-                              height: 1.2, // Tighter line height
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: isSelected ? Colors.white : Colors.black87,
-                            ),
+                          style: GoogleFonts.lexendDeca(
+                            textStyle: const TextStyle(fontSize: 18),
                           ),
                         ),
                       ),
-                      // Check icon - smaller
-                      if (isSelected)
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 300),
-                          opacity: 1.0,
-                          child: Container(
-                            padding: const EdgeInsets.all(3), // Smaller padding
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check_circle,
-                              color: gradientColors[0],
-                              size: 22, // Smaller icon
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-
-          const SizedBox(height: 16), // Reduced spacing
-
-          // Check Answer button - make more compact
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: 50, // Shorter button
-            decoration: BoxDecoration(
-              gradient: selectedChoice == null
-                  ? LinearGradient(
-                      colors: [Colors.grey.shade300, Colors.grey.shade200],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : const LinearGradient(
-                      colors: [Color(0xFF3F51B5), Color(0xFF5C6BC0)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-              borderRadius: BorderRadius.circular(16), // Smaller radius
-              boxShadow: selectedChoice == null
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: const Color(0xFF3F51B5).withOpacity(0.2),
-                        blurRadius: 8,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 20),
+          // Check Answer button
+          ElevatedButton(
+            onPressed: checkAnswer,
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.blue[800],
             ),
-            child: ElevatedButton(
-              onPressed: selectedChoice == null ? null : checkAnswer,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                disabledBackgroundColor: Colors.transparent,
-                disabledForegroundColor: Colors.grey.shade500,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12), // Reduced padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'Check Answer',
+                style: GoogleFonts.lexendDeca(
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: selectedChoice == null
-                        ? Colors.grey.shade500
-                        : Colors.white,
-                    size: 20, // Smaller icon
-                  ),
-                  const SizedBox(width: 8), // Reduced spacing
-                  Text(
-                    'Check Answer',
-                    style: GoogleFonts.fredoka(
-                      textStyle: TextStyle(
-                        fontSize: 16, // Smaller font
-                        fontWeight: FontWeight.bold,
-                        color: selectedChoice == null
-                            ? Colors.grey.shade500
-                            : Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  void main() {
-    runApp(const MaterialApp(
-      home: QuestionsPage(
-        topicId: 1,
-        topicName: 'Sample Topic',
-        subjectName: 'Sample Subject',
-      ),
-    ));
   }
 }
